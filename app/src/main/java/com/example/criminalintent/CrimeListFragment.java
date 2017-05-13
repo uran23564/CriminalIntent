@@ -7,6 +7,7 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -47,14 +48,16 @@ public class CrimeListFragment extends Fragment {
         // CrimeHolder ist durch diese Definition als Empfaenger von Klicks gesetzt -- also onClickListener implementieren
         private TextView mTitleTextView;
         private TextView mDateTextView;
+        private TextView mSeriousTextView;
+        private Button mCallPolice;
+
         private Crime mCrime;
 
-        public CrimeHolder(LayoutInflater inflater, ViewGroup parent){ // Initialisierung eines ViewHolders und seiner Widgets
-            super(inflater.inflate(R.layout.list_item_crime,parent,false)); // ViewHolder inflated ein Objekt der Liste
+        public CrimeHolder(LayoutInflater inflater, ViewGroup parent, int viewType){ // Initialisierung eines ViewHolders und seiner Widgets
+            super(inflater.inflate(R.layout.list_item_crime, parent, false)); // ViewHolder inflated ein Objekt der Liste
             itemView.setOnClickListener(this);
-
-            mTitleTextView=(TextView) itemView.findViewById(R.id.crime_title);
-            mDateTextView=(TextView) itemView.findViewById(R.id.crime_date);
+            mTitleTextView = (TextView) itemView.findViewById(R.id.crime_title);
+            mDateTextView = (TextView) itemView.findViewById(R.id.crime_date);
         }
 
         public void bind(Crime crime){ // fuettert die Widgets mit Daten aus der Modellschicht
@@ -67,7 +70,39 @@ public class CrimeListFragment extends Fragment {
         public void onClick(View view){
             Toast.makeText(getActivity(),mCrime.getTitle()+ " clicked!",Toast.LENGTH_SHORT).show();
         }
+
     }
+
+/*    private class SeriousCrimeHolder extends  RecyclerView.ViewHolder implements View.OnClickListener{ // ViewHolder fuer schlimme Untaten
+        private TextView mTitleTextView;
+        private TextView mDateTextView;
+        private TextView mSeriousTextView;
+        private Button mCallPolice;
+
+        private Crime mCrime;
+
+        public SeriousCrimeHolder(LayoutInflater inflater, ViewGroup parent){
+            super(inflater.inflate(R.layout.list_item_serious_crime,parent,false));
+            itemView.setOnClickListener(this);
+
+            mTitleTextView=(TextView) itemView.findViewById(R.id.crime_title);
+            mDateTextView=(TextView) itemView.findViewById(R.id.crime_date);
+            mSeriousTextView=(TextView) itemView.findViewById(R.id.crime_serious);
+            mCallPolice=(Button) itemView.findViewById(R.id.call_police);
+        }
+
+        public void bind (Crime crime){
+            mCrime=crime;
+            mTitleTextView.setText(mCrime.getTitle());
+            mDateTextView.setText(mCrime.getDate().toString());
+            mSeriousTextView.setText(String.valueOf(mCrime.isPoliceRequired()));
+        }
+
+        @Override
+        public void onClick(View view){
+            Toast.makeText(getActivity(),mCrime.getTitle()+ " clicked!",Toast.LENGTH_SHORT).show();
+        }
+    }*/
 
     private class CrimeAdapter extends RecyclerView.Adapter<CrimeHolder> { // Adaper als innere Klasse
         // Adapter sitzt zwischen RecyclerView und den Daten, die der RecyclerView darstellen soll.
@@ -82,9 +117,16 @@ public class CrimeListFragment extends Fragment {
         public CrimeHolder onCreateViewHolder(ViewGroup parent, int viewType){ // Adapter erstellt die ViewHolder
             // Adapter von RecycleView erstellt gerade so viele ViewHolders, wie auf den Bildschirm passen (z. B. Elf). Beim Scrollen
             // werden die Views der Viewholder ersetzt
-            LayoutInflater layoutInflater=LayoutInflater.from(getActivity());
-            return new CrimeHolder(layoutInflater,parent); // erstellt einen neuen ViewHolder, insb. hier einen CrimeHolder
+            LayoutInflater layoutInflater = LayoutInflater.from(getActivity());
+            if(viewType==0) {
+                return new CrimeHolder(layoutInflater, parent,0); // erstellt einen neuen ViewHolder, insb. hier einen CrimeHolder
+            }
+            if(viewType==1){
+                return new CrimeHolder(layoutInflater,parent,1);
+            }
+            return null;
         }
+
 
         @Override
         public void onBindViewHolder(CrimeHolder holder, int position){ // fuettert den ViewHolder mit Daten aus der Modellschicht
@@ -94,6 +136,14 @@ public class CrimeListFragment extends Fragment {
         @Override
         public int getItemCount(){
             return mCrimes.size();
+        }
+
+        @Override
+        public int getItemViewType(int position){ // ueberlade getItemViewType, je nachdem, ob das Verbrechen schwerwiegend ist
+            if(!mCrimes.get(position).isPoliceRequired()){
+                return 0; // bei normalen Untaten Null zurueckgeben
+            }
+            else{ return 1;} // bei schweren Untaten Eins zurueckgeben
         }
     }
 }
