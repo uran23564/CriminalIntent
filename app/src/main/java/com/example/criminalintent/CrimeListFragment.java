@@ -34,11 +34,11 @@ public class CrimeListFragment extends Fragment {
     }
 
     private void updateUI(){
-        CrimeLab crimeLab=CrimeLab.get(getActivity()); // Singleton crimeLab wird erzeugt bzw. abgefragt
+        CrimeLab crimeLab=CrimeLab.get(getActivity()); // Singleton crimeLab samt Liste der Crimes wird erzeugt bzw. abgefragt
         List <Crime> crimes=crimeLab.getCrimes(); // die Liste der erzeugten Crimes wird kopiert
 
-        mAdapter=new CrimeAdapter(crimes); // Verbindung zur Modellschicht
-        mCrimeRecyclerView.setAdapter(mAdapter);
+        mAdapter=new CrimeAdapter(crimes); // Verbindung von RecycleView zur Modellschicht
+        mCrimeRecyclerView.setAdapter(mAdapter); // Zuweiseung des Adapters
     }
 
 
@@ -49,7 +49,7 @@ public class CrimeListFragment extends Fragment {
         private TextView mDateTextView;
         private Crime mCrime;
 
-        public CrimeHolder(LayoutInflater inflater, ViewGroup parent){ // Initialisierung eines ViewHolders
+        public CrimeHolder(LayoutInflater inflater, ViewGroup parent){ // Initialisierung eines ViewHolders und seiner Widgets
             super(inflater.inflate(R.layout.list_item_crime,parent,false)); // ViewHolder inflated ein Objekt der Liste
             itemView.setOnClickListener(this);
 
@@ -74,8 +74,8 @@ public class CrimeListFragment extends Fragment {
         // Der Adapter ist fuer die Erstellung der ViewHolder und das Verknuepfen von Daten der Modellschicht mit dem ViewHolder verantwortlich.
         private List<Crime> mCrimes;
 
-        public CrimeAdapter(List<Crime> crimes){
-            mCrimes=crimes;
+        public CrimeAdapter(List<Crime> crimes){ // Konstruktor
+            mCrimes=crimes; // Zuweisung der Crime-Liste aus dem Singleton
         }
 
         @Override
@@ -88,8 +88,7 @@ public class CrimeListFragment extends Fragment {
 
         @Override
         public void onBindViewHolder(CrimeHolder holder, int position){ // fuettert den ViewHolder mit Daten aus der Modellschicht
-            Crime crime=mCrimes.get(position);
-            holder.bind(crime);
+            holder.bind(mCrimes.get(position)); // bindet den Crime an der Stelle "position" im array an einen ViewHolder
         }
 
         @Override

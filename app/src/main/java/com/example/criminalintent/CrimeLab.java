@@ -28,6 +28,7 @@ public class CrimeLab { // Singleton-Klasse
             Crime crime=new Crime();
             crime.setTitle("Crime #" +(i+1));
             crime.setSolved(i%2==0); // jede zweite untat ist geloest
+            crime.setPoliceRequired(i%3==0); // jede dritte untat ist schwerwiegend
             mCrimes.add(crime);
         }
     }
