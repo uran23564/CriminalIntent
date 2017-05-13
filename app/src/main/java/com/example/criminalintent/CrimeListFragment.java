@@ -118,7 +118,7 @@ public class CrimeListFragment extends Fragment {
             // werden die Views der Viewholder ersetzt
             LayoutInflater layoutInflater = LayoutInflater.from(getActivity());
             if(viewType==0) {
-                return new CrimeHolder(layoutInflater, parent); // erstellt einen neuen ViewHolder, insb. hier einen CrimeHolder
+                return new CrimeHolder(layoutInflater, parent); // erstellt einen neuen CrimeHolder
             }
             if(viewType==1){
                 return new SeriousCrimeHolder(layoutInflater,parent);
