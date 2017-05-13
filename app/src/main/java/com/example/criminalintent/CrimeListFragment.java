@@ -48,12 +48,10 @@ public class CrimeListFragment extends Fragment {
         // CrimeHolder ist durch diese Definition als Empfaenger von Klicks gesetzt -- also onClickListener implementieren
         private TextView mTitleTextView;
         private TextView mDateTextView;
-        private TextView mSeriousTextView;
-        private Button mCallPolice;
 
         private Crime mCrime;
 
-        public CrimeHolder(LayoutInflater inflater, ViewGroup parent, int viewType){ // Initialisierung eines ViewHolders und seiner Widgets
+        public CrimeHolder(LayoutInflater inflater, ViewGroup parent){ // Initialisierung eines ViewHolders und seiner Widgets
             super(inflater.inflate(R.layout.list_item_crime, parent, false)); // ViewHolder inflated ein Objekt der Liste
             itemView.setOnClickListener(this);
             mTitleTextView = (TextView) itemView.findViewById(R.id.crime_title);
@@ -73,7 +71,7 @@ public class CrimeListFragment extends Fragment {
 
     }
 
-/*    private class SeriousCrimeHolder extends  RecyclerView.ViewHolder implements View.OnClickListener{ // ViewHolder fuer schlimme Untaten
+    private class SeriousCrimeHolder extends  RecyclerView.ViewHolder implements View.OnClickListener{ // ViewHolder fuer schlimme Untaten
         private TextView mTitleTextView;
         private TextView mDateTextView;
         private TextView mSeriousTextView;
@@ -102,9 +100,10 @@ public class CrimeListFragment extends Fragment {
         public void onClick(View view){
             Toast.makeText(getActivity(),mCrime.getTitle()+ " clicked!",Toast.LENGTH_SHORT).show();
         }
-    }*/
+    }
 
-    private class CrimeAdapter extends RecyclerView.Adapter<CrimeHolder> { // Adaper als innere Klasse
+    private class CrimeAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> { // Adaper als innere Klasse
+        // Adapter managed ganz allgemein ViewHolder-Objekte -- nicht nur CrimeHold-Objekte
         // Adapter sitzt zwischen RecyclerView und den Daten, die der RecyclerView darstellen soll.
         // Der Adapter ist fuer die Erstellung der ViewHolder und das Verknuepfen von Daten der Modellschicht mit dem ViewHolder verantwortlich.
         private List<Crime> mCrimes;
@@ -114,23 +113,30 @@ public class CrimeListFragment extends Fragment {
         }
 
         @Override
-        public CrimeHolder onCreateViewHolder(ViewGroup parent, int viewType){ // Adapter erstellt die ViewHolder
+        public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType){ // Adapter erstellt die ViewHolder
             // Adapter von RecycleView erstellt gerade so viele ViewHolders, wie auf den Bildschirm passen (z. B. Elf). Beim Scrollen
             // werden die Views der Viewholder ersetzt
             LayoutInflater layoutInflater = LayoutInflater.from(getActivity());
             if(viewType==0) {
-                return new CrimeHolder(layoutInflater, parent,0); // erstellt einen neuen ViewHolder, insb. hier einen CrimeHolder
+                return new CrimeHolder(layoutInflater, parent); // erstellt einen neuen ViewHolder, insb. hier einen CrimeHolder
             }
             if(viewType==1){
-                return new CrimeHolder(layoutInflater,parent,1);
+                return new SeriousCrimeHolder(layoutInflater,parent);
             }
             return null;
         }
 
 
         @Override
-        public void onBindViewHolder(CrimeHolder holder, int position){ // fuettert den ViewHolder mit Daten aus der Modellschicht
-            holder.bind(mCrimes.get(position)); // bindet den Crime an der Stelle "position" im array an einen ViewHolder
+        public void onBindViewHolder(RecyclerView.ViewHolder holder, int position){ // fuettert den ViewHolder mit Daten aus der Modellschicht
+            if(holder.getItemViewType()==0) {
+                CrimeHolder crimeHolder=(CrimeHolder)holder;
+                crimeHolder.bind(mCrimes.get(position)); // bindet den Crime an der Stelle "position" im array an einen ViewHolder
+            }
+            if(holder.getItemViewType()==1){
+                SeriousCrimeHolder seriousCrimeHolder=(SeriousCrimeHolder)holder;
+                seriousCrimeHolder.bind(mCrimes.get(position));
+            }
         }
 
         @Override
