@@ -8,6 +8,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -48,6 +49,7 @@ public class CrimeListFragment extends Fragment {
         // CrimeHolder ist durch diese Definition als Empfaenger von Klicks gesetzt -- also onClickListener implementieren
         private TextView mTitleTextView;
         private TextView mDateTextView;
+        private ImageView mSolvedImageView;
 
         private Crime mCrime;
 
@@ -56,12 +58,14 @@ public class CrimeListFragment extends Fragment {
             itemView.setOnClickListener(this);
             mTitleTextView = (TextView) itemView.findViewById(R.id.crime_title);
             mDateTextView = (TextView) itemView.findViewById(R.id.crime_date);
+            mSolvedImageView=(ImageView) itemView.findViewById(R.id.crime_solved); // Handschellen bedeuten, dass der Fall geloest ist
         }
 
         public void bind(Crime crime){ // fuettert die Widgets mit Daten aus der Modellschicht
             mCrime=crime;
             mTitleTextView.setText(mCrime.getTitle());
             mDateTextView.setText(mCrime.getDate().toString());
+            mSolvedImageView.setVisibility(crime.isSolved() ? View.VISIBLE:View.GONE);
         }
 
         @Override
@@ -76,6 +80,7 @@ public class CrimeListFragment extends Fragment {
         private TextView mDateTextView;
         private TextView mSeriousTextView;
         private Button mCallPolice;
+        private ImageView mSolvedImageView;
 
         private Crime mCrime;
 
@@ -87,6 +92,7 @@ public class CrimeListFragment extends Fragment {
             mDateTextView=(TextView) itemView.findViewById(R.id.crime_date);
             mSeriousTextView=(TextView) itemView.findViewById(R.id.crime_serious);
             mCallPolice=(Button) itemView.findViewById(R.id.call_police);
+            mSolvedImageView=(ImageView) itemView.findViewById(R.id.crime_solved);
         }
 
         public void bind (Crime crime){
@@ -94,6 +100,8 @@ public class CrimeListFragment extends Fragment {
             mTitleTextView.setText(mCrime.getTitle());
             mDateTextView.setText(mCrime.getDate().toString());
             mSeriousTextView.setText(String.valueOf(mCrime.isPoliceRequired()));
+            mSolvedImageView.setVisibility(crime.isSolved() ? View.VISIBLE:View.GONE);
+            mCallPolice.setVisibility(crime.isSolved() ? View.GONE:View.VISIBLE); // Verstecke Knopf, wenn der Fall geloest ist
         }
 
         @Override
