@@ -1,5 +1,7 @@
 package com.example.criminalintent;
 
+import android.app.Activity;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
@@ -13,6 +15,15 @@ import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.EditText;
 
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.List;
+import java.util.UUID;
+
+import static android.app.Activity.RESULT_OK;
+
+
 /**
  * Created by merz_konstantin on 5/7/17.
  */
@@ -20,12 +31,15 @@ import android.widget.EditText;
 public class CrimeFragment extends Fragment {
     private static final String ARG_CRIME_ID="crime_id";
     // private static final String ARG_CRIME="crime";
+    public static final String EXTRA_UUID="crime_id_back"; // zum zuruecksenden
     private static final String DIALOG_DATE="DialogDate"; // tag fuer den alertdialog, damit dieser identifiziert und aufgerufen werden kann
     private static final String DIALOG_TIME="DialogTime"; // tag fuer den alertdialog, damit dieser identifiziert und aufgerufen werden kann
     private static int REQUEST_DATE=0; // zum identifizieren des kind-fragments, von dem wir eine antwort erwarten -- hier DatePickerFragment
     private static int REQUEST_TIME=0; // zum identifizieren des kind-fragments --hier TimePickerFragment
 
     private Crime mCrime; // eine Untat aus einer Liste von Untaten (die in CrimeListActivity bzw. CrimeListFragment gemanaged wird), wird in diesem Fragment bearbeitet
+    // private UUID[] maybeChangedIds; // moeglicherweise veraenderte Crimes
+    // private int counterChangedIds; // Zaehler der moeglicherweise veraenderten Crimes
 
     private EditText mTitleField;
     private Button mDateButton;
@@ -98,21 +112,6 @@ public class CrimeFragment extends Fragment {
         });
 
               
-        // ueberschreibt die onActivityResult-Methode, um mit der Antwort von DatePickerFragment umgehen zu koennen
-        @Override
-        public void onActivityResult(int requestCode,int resultCode, Intent data){
-            if(resultCode!=Activity.RESULT_OK){
-                return;
-            }
-            if(requestCode==REQUEST_DATE){
-                if(data==null){return;}
-                Date date=(Date) data.getSerializableExtra(DatePickerFragment.EXTRA_DATE);
-                mCrime.setDate(date);
-                updateDate();
-            }
-        }
-        
-        
         // Zeit setzen
         updateTime();
         mTimeButton.setOnClickListener(new View.OnClickListener(){
@@ -126,19 +125,7 @@ public class CrimeFragment extends Fragment {
         });
 
               
-        // ueberschreibt die onActivityResult-Methode, um mit der Antwort von TimeePickerFragment umgehen zu koennen
-        @Override
-        public void onActivityResult(int requestCode,int resultCode, Intent data){
-            if(resultCode!=Activity.RESULT_OK){
-                return;
-            }
-            if(requestCode==REQUEST_DATE){
-                if(data==null){return;}
-                Date date=(Date) data.getSerializableExtra(DatePickerFragment.EXTRA_DATE);
-                mCrime.setDate(date);
-                updateTime();
-            }
-        }
+
         
         
         
@@ -148,14 +135,60 @@ public class CrimeFragment extends Fragment {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 mCrime.setSolved(isChecked);
+                //collectChanges(mCrime.getId());
             }
         });
         
 
         return v;
     }
+
+/*    private void collectChanges(UUID id){
+        maybeChangedIds[counterChangedIds]=id;
+        counterChangedIds++;
+        sendResult(Activity.RESULT_OK,maybeChangedIds);
+    }
+
+
+    private void sendResult(int resultCode, UUID[] id){ // gibt letzte angesehene UUID zurueck
+        Intent intent=new Intent();
+        // UUID[] maybeChangedIds=new UUID[10];
+        // maybeChangedIds[0]=UUID.randomUUID();
+        //maybeChangedIds.add(id);
+        // intent.putExtra(EXTRA_UUID,maybeChangedIds);
+        intent.putExtra(EXTRA_UUID,id);
+        getActivity().setResult(resultCode,intent);
+    }*/
+
+    // ueberschreibt die onActivityResult-Methode, um mit der Antwort von DatePickerFragment umgehen zu koennen
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data){
+        if(resultCode!= RESULT_OK){
+            return;
+        }
+        if(requestCode==REQUEST_DATE){
+            Date date=(Date) data.getSerializableExtra(DatePickerFragment.EXTRA_DATE);
+            mCrime.setDate(date);
+            updateDate();
+            // sendResult(Activity.RESULT_OK,mCrime.getId());
+            // collectChanges(mCrime.getId());
+        }
+        if(requestCode==REQUEST_TIME){
+            /*Date time=(Date) data.getSerializableExtra(TimePickerFragment.EXTRA_TIME);
+            mCrime.setDate(time);*/
+            updateTime();
+            // sendResult(Activity.RESULT_OK,mCrime.getId());
+            // collectChanges(mCrime.getId());
+        }
+    }
+
     
     private void updateDate(){
+        Calendar calendar=Calendar.getInstance();
+        calendar.setTime(mCrime.getDate());
+        int year=calendar.get(Calendar.YEAR);
+        int month=calendar.get(Calendar.MONTH);
+        int day=calendar.get(Calendar.DAY_OF_MONTH);
         mDateButton.setText(mCrime.getDate().toString());
     }
     

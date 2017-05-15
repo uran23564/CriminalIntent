@@ -29,7 +29,7 @@ public class Crime {
 
     // setter (UUID wird nie veraendert!)
     public void setTitle(String title){mTitle=title;}
-    public void setmDate(Date date){mDate=date;}
+    public void setDate(Date date){mDate=date;}
     public void setSolved(boolean solved){mSolved=solved;}
     public void setPoliceRequired(boolean policeRequired){ mRequiresPolice=policeRequired;}
 }

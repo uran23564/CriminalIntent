@@ -1,15 +1,19 @@
 package com.example.criminalintent;
 
+import android.content.Context;
+import android.content.Intent;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 
+import java.util.UUID;
+
 public class CrimeActivity extends SingleFragmentActivity {
     private static final String EXTRA_CRIME_ID="com.example.criminalintent.crime_id"; // keine andere klasse wird darauf zugreifen -- dient nur zum speichern der crimeId, die vom Caller uebergeben wird
     // private static final String EXTRA_CRIME="com.example.criminalintent.crime";
 
-    public static Intent newIntent(Context packageContext,UUID crimeId){
+    public static Intent newIntent(Context packageContext, UUID crimeId){
     // public static Intent newIntent(Context packageContext,Crime crime){
         Intent intent = new Intent(packageContext,CrimeActivity.class);
         intent.putExtra(EXTRA_CRIME_ID,crimeId);

@@ -1,5 +1,7 @@
 package com.example.criminalintent;
 
+import android.app.Activity;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.LinearLayoutManager;
@@ -12,20 +14,23 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.util.Date;
 import java.util.List;
+import java.util.UUID;
 
 /**
  * Created by merz_konstantin on 5/13/17.
  */
 
 public class CrimeListFragment extends Fragment {
-    // private static final int REQUEST_CODE_CRIME=0;
+    private static final int REQUEST_CODE_CRIME=0;
 
     private RecyclerView mCrimeRecyclerView;
     private CrimeAdapter mAdapter; // jedes RecycleView braucht einen Adapter fuer das Erstellen von ViewHolders und die Arbeit
     // mit der Modellschicht
-    
-    private int clickedLayoutPosition=0; // merkt sich, welches item von RecyclerView gedrueckt wurde
+
+    // private UUID lastId; // letzte UUID, die man angeschaut hat
+    // private UUID[] maybeChangedIds;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState){
@@ -53,11 +58,33 @@ public class CrimeListFragment extends Fragment {
             mAdapter=new CrimeAdapter(crimes); // Verbindung von RecycleView zur Modellschicht
             mCrimeRecyclerView.setAdapter(mAdapter); // Zuweiseung des Adapters
         }
-        else{ // gibt es bereits einen adapter, so benachrichtige ihn, dass sich ein Crime geaendert haben koennte
-            // mAdapter.notifyDataSetChanged(); // ganze liste wird aktualisiert, obwohl hoechstens ein Crime geaendert wurde -> ineffizient
-            mAdapter.notifyItemChanged(clickedLayoutPosition);
+        else{
+            mAdapter.notifyDataSetChanged(); // ganze liste wird aktualisiert, obwohl hoechstens ein Crime geaendert wurde -> ineffizient
         }
+        /*else{ // gibt es bereits einen adapter, so benachrichtige ihn, dass sich ein Crime geaendert haben koennte
+            // mAdapter.notifyItemChanged(clickedLayoutPosition); // funktioniert nicht mehr, wenn wir von Crime zu Crime wischen koennen
+            if(maybeChangedIds.length!=0) {
+                for (int i = 0; i < crimes.size(); i++) { // checke, ob letztes gesehene Crime geaendert wurde
+                    for (int j = 0; j < maybeChangedIds.length; j++) {
+                        // if(crimes.get(i).getId().equals(lastId)){
+                        if (crimes.get(i).getId().equals(maybeChangedIds[j])) {
+                            mAdapter.notifyItemChanged(i);
+                            break;
+                        }
+                    }
+                }
+            }
+            else{
+                for (int i=0;i<crimes.size();i++){ // checke, ob letztes gesehene Crime geaendert wurde
+                    if(crimes.get(i).getId().equals(lastId)){
+                        mAdapter.notifyItemChanged(i);
+                        break;
+                        }
+                    }
+                }
+            }*/
     }
+
 
 
     private class CrimeHolder extends RecyclerView.ViewHolder implements View.OnClickListener{ // ViewHolder als innere Klasse
@@ -87,12 +114,11 @@ public class CrimeListFragment extends Fragment {
         @Override
         public void onClick(View view){
             // Toast.makeText(getActivity(),mCrime.getTitle()+ " clicked!",Toast.LENGTH_SHORT).show();
-            Intent intent=CrimeActivity.newIntent(getActivity(),mCrime.getId());
+            // Intent intent=CrimeActivity.newIntent(getActivity(),mCrime.getId());
             // Intent intent=CrimeActivity.newIntent(getActivity(),mCrime);
-            // Intent intent=CrimePagerActivity.newIntent(getActivity(),mCrime.getId());
-            // startActivityForResult(intent,REQUEST_CODE_CRIME); // lade CrimeActivity mit zugehoeriger Id der Untat
-            startActivity(intent); // lade CrimeActivity mit zugehoeriger Id der Untat
-            clickedLayoutPosition=this.getLayoutPosition();
+            Intent intent=CrimePagerActivity.newIntent(getActivity(),mCrime.getId());
+            startActivityForResult(intent,REQUEST_CODE_CRIME); // lade CrimeActivity mit zugehoeriger Id der Untat
+            // startActivity(intent); // lade CrimeActivity mit zugehoeriger Id der Untat
         }
 
     }
@@ -129,12 +155,11 @@ public class CrimeListFragment extends Fragment {
         @Override
         public void onClick(View view){
             // Toast.makeText(getActivity(),mCrime.getTitle()+ " clicked!",Toast.LENGTH_SHORT).show();
-            Intent intent=CrimeActivity.newIntent(getActivity(),mCrime.getId());
+            // Intent intent=CrimeActivity.newIntent(getActivity(),mCrime.getId());
             // Intent intent=CrimeActivity.newIntent(getActivity(),mCrime);
-            // Intent intent=CrimePagerActivity.newIntent(getActivity(),mCrime.getId());
-            // startActivityForResult(intent,REQUEST_CODE_CRIME); // lade CrimeActivity mit zugehoeriger Id der Untat
-            startActivity(intent); // lade CrimeActivity mit zugehoeriger Id der Untat
-            clickedLayoutPosition=this.getLayoutPosition();
+            Intent intent=CrimePagerActivity.newIntent(getActivity(),mCrime.getId());
+            startActivityForResult(intent,REQUEST_CODE_CRIME); // lade CrimeActivity mit zugehoeriger Id der Untat
+            // startActivity(intent); // lade CrimeActivity mit zugehoeriger Id der Untat
         }
     }
 
@@ -189,4 +214,16 @@ public class CrimeListFragment extends Fragment {
             else{ return 1;} // bei schweren Untaten Eins zurueckgeben
         }
     }
+
+
+   /* @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data){
+        if(resultCode!= Activity.RESULT_OK){
+            return;
+        }
+        if(requestCode==REQUEST_CODE_CRIME){
+            // lastId=(UUID) data.getSerializableExtra(CrimeFragment.EXTRA_UUID);
+            maybeChangedIds=(UUID[]) data.getSerializableExtra(CrimeFragment.EXTRA_UUID);
+        }
+    }*/
 }
