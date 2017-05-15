@@ -18,17 +18,32 @@ import android.widget.EditText;
  */
 
 public class CrimeFragment extends Fragment {
-    private Crime mCrime; // erstmal nur eine Untat
+    private static final String ARG_CRIME_ID="crime_id";
+    // private static final String ARG_CRIME="crime";
+
+    private Crime mCrime; // eine Untat aus einer Liste von Untaten (die in CrimeListActivity bzw. CrimeListFragment gemanaged wird), wird in diesem Fragment bearbeitet
 
     private EditText mTitleField;
     private Button mDateButton;
     private CheckBox mSolvedCheckBox;
+    
+    public static CrimeFragment newInstance(UUID crimeId){ // methode wird von einer activity aufgerufen, die dieses fragment mit zusaetzlichen bundles erzeugen moechte -- hier soll dem erzeugten Fragment eine crimeId uebergeben werden
+    // public static CrimeFragment newInstance(Crime crime){
+    // argumente/bundles muessen dem Fragment NACH seiner Erzeugung aber BEVOR es zu einer activity zugefuegt wird, uebergeben wrden
+        Bundle args=new Bundle();
+        args.putSerializable(ARG_CRIME_ID,crimeId); // speichert die vom Caller (CrimeActivity) uebergebene crimeId ab
+        // args.putSerializable(ARG_CRIME,crime);
+        CrimeFragment fragment=new CrimeFragment();
+        fragment.setArguments(args); // uebergibt dem neu erzeugten Fragment die erzeugten Argumente
+        return fragment;
+    }
+    
 
     @Override
     public void onCreate(Bundle savedInstanceState){
         super.onCreate(savedInstanceState);
-        // mCrime=new Crime();
-        UUID crimeId=(UUID) getActivity().getIntent().getSerializableExtra(EXTRA_CRIME_ID);
+        // CrimeFragment wird durch newInstance erzeugt, d.h. ARG_CRIME_ID ist wohldefiniert
+        UUID crimeId=(UUID) getArguments().getSerializable(ARG_CRIME_ID); // liest die crimeId aus dem Argument, mit dem das Fragment erzeugt wurde
         mCrime=CrimeLab.get(getActivity()).getCrime(crimeId);
     }
 
@@ -45,6 +60,7 @@ public class CrimeFragment extends Fragment {
 
 
         // Titel setzen
+        mTitleField.setText(mCrime.getTitle());
         mTitleField.addTextChangedListener(new TextWatcher(){
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after){
@@ -67,14 +83,13 @@ public class CrimeFragment extends Fragment {
         mDateButton.setEnabled(false); // spaeter erlauben wir es ein datum einzugeben
 
         // Fall geloest setzen
+        mSolvedCheckBox.setChecked(mCrime.isSolved());
         mSolvedCheckBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 mCrime.setSolved(isChecked);
             }
         });
-
-
 
         return v;
     }

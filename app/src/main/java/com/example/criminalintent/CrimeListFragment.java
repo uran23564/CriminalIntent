@@ -19,9 +19,13 @@ import java.util.List;
  */
 
 public class CrimeListFragment extends Fragment {
+    // private static final int REQUEST_CODE_CRIME=0;
+
     private RecyclerView mCrimeRecyclerView;
     private CrimeAdapter mAdapter; // jedes RecycleView braucht einen Adapter fuer das Erstellen von ViewHolders und die Arbeit
     // mit der Modellschicht
+    
+    private int clickedLayoutPosition=0; // merkt sich, welches item von RecyclerView gedrueckt wurde
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState){
@@ -34,13 +38,25 @@ public class CrimeListFragment extends Fragment {
         updateUI();
         return view;
     }
+    
+    @Override
+    public void onResume(){ // wenn etwas in CrimeActivity bzw. CrimeFragment geaendert wird, soll der RecyclerView aktualisiert werden
+        super.onResume();
+        updateUI();
+    }
 
     private void updateUI(){
         CrimeLab crimeLab=CrimeLab.get(getActivity()); // Singleton crimeLab samt Liste der Crimes wird erzeugt bzw. abgefragt
         List <Crime> crimes=crimeLab.getCrimes(); // die Liste der erzeugten Crimes wird kopiert
 
-        mAdapter=new CrimeAdapter(crimes); // Verbindung von RecycleView zur Modellschicht
-        mCrimeRecyclerView.setAdapter(mAdapter); // Zuweiseung des Adapters
+        if(mAdapter==null){
+            mAdapter=new CrimeAdapter(crimes); // Verbindung von RecycleView zur Modellschicht
+            mCrimeRecyclerView.setAdapter(mAdapter); // Zuweiseung des Adapters
+        }
+        else{ // gibt es bereits einen adapter, so benachrichtige ihn, dass sich ein Crime geaendert haben koennte
+            // mAdapter.notifyDataSetChanged(); // ganze liste wird aktualisiert, obwohl hoechstens ein Crime geaendert wurde -> ineffizient
+            mAdapter.notifyItemChanged(clickedLayoutPosition);
+        }
     }
 
 
@@ -72,7 +88,11 @@ public class CrimeListFragment extends Fragment {
         public void onClick(View view){
             // Toast.makeText(getActivity(),mCrime.getTitle()+ " clicked!",Toast.LENGTH_SHORT).show();
             Intent intent=CrimeActivity.newIntent(getActivity(),mCrime.getId());
+            // Intent intent=CrimeActivity.newIntent(getActivity(),mCrime);
+            // Intent intent=CrimePagerActivity.newIntent(getActivity(),mCrime.getId());
+            // startActivityForResult(intent,REQUEST_CODE_CRIME); // lade CrimeActivity mit zugehoeriger Id der Untat
             startActivity(intent); // lade CrimeActivity mit zugehoeriger Id der Untat
+            clickedLayoutPosition=this.getLayoutPosition();
         }
 
     }
@@ -110,7 +130,11 @@ public class CrimeListFragment extends Fragment {
         public void onClick(View view){
             // Toast.makeText(getActivity(),mCrime.getTitle()+ " clicked!",Toast.LENGTH_SHORT).show();
             Intent intent=CrimeActivity.newIntent(getActivity(),mCrime.getId());
+            // Intent intent=CrimeActivity.newIntent(getActivity(),mCrime);
+            // Intent intent=CrimePagerActivity.newIntent(getActivity(),mCrime.getId());
+            // startActivityForResult(intent,REQUEST_CODE_CRIME); // lade CrimeActivity mit zugehoeriger Id der Untat
             startActivity(intent); // lade CrimeActivity mit zugehoeriger Id der Untat
+            clickedLayoutPosition=this.getLayoutPosition();
         }
     }
 
@@ -141,6 +165,7 @@ public class CrimeListFragment extends Fragment {
 
         @Override
         public void onBindViewHolder(RecyclerView.ViewHolder holder, int position){ // fuettert den ViewHolder mit Daten aus der Modellschicht
+        // clickedLayoutPosition=position;
             if(holder.getItemViewType()==0) {
                 CrimeHolder crimeHolder=(CrimeHolder)holder;
                 crimeHolder.bind(mCrimes.get(position)); // bindet den Crime an der Stelle "position" im array an einen ViewHolder
