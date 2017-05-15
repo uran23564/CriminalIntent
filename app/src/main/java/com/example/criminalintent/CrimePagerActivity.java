@@ -44,7 +44,7 @@ public class CrimePagerActivity extends AppCompatActivity{
             public Fragment getItem(int position){
                 Crime crime=mCrimes.get(position);
                 mFirstButton.setEnabled(position==0 ? false:true); // knopf deaktivieren, wenn wir an erster stelle sind
-                mLastButton.setEnabled(position==mCrimes.size()-1 false:true); // knopf deaktivieren, wenn wir an letzter stelle sind
+                mLastButton.setEnabled(position==mCrimes.size()-1 ? false:true); // knopf deaktivieren, wenn wir an letzter stelle sind
                 return CrimeFragment.newInstance(crime.getId());
             }
             
