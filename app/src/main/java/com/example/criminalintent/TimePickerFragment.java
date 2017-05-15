@@ -17,13 +17,13 @@ public class TimePickerFragment extends DialogFragment{
     public Dialog onCreateDialog(Bundle savedInstanceState){
         View v=LayoutInflater.from(getActivity()).inflate(R.layout.dialog_time,null);
         // um die integer aus dem datum zu bekommen, muessen wir den umweg ueber ein calendar-objekt gehen.
-        Date date=(Date) getArguments.getSerializable(ARG_DATE);
+        Date time=(Date) getArguments.getSerializable(ARG_TIME);
         Calendar calendar=Calendar.getInstance();
         calendar.setTime(date);
         int hour=calendar.get(Calendar.HOUR_OF_DAY);
         int minute=calendar.get(Calendar.MINUTE);
         
-        mTimePicker=(DatePicker) v.findViewById(R.id.dialog_date);
+        mTimePicker=(DatePicker) v.findViewById(R.id.dialog_time);
         mTimePicker.setHour(hour);
         mTimePicker.setMinute(minute);
         
@@ -33,9 +33,9 @@ public class TimePickerFragment extends DialogFragment{
                             @Override
                             public void onClick(DialogInterface dialog,int which){
                                 // datum zusammenbasteln
-                                Date date=new GregorianCalendar(null,null,null,mDatePicker.getHour(),mDatePicker.getMinute(),null).getTime();
+                                Date time=new GregorianCalendar(null,null,null,mDatePicker.getHour(),mDatePicker.getMinute(),null).getTime();
                                 
-                                sendResult(Activity.RESULT_OK,date); // wird der knopf gedrueckt, basteln wir uns ein datum aus dem zeug, was der user eingegeben hat, zusammen und schicken es anschliessend an CrimeFragment per intent zurueck
+                                sendResult(Activity.RESULT_OK,time); // wird der knopf gedrueckt, basteln wir uns ein datum aus dem zeug, was der user eingegeben hat, zusammen und schicken es anschliessend an CrimeFragment per intent zurueck
                             }
                                                     }).create();
         // zweites Argument von setPositiveButton ist ein Objekt, das DialogInterface.OnClickListener implementiert        
