@@ -27,7 +27,9 @@ public class CrimeFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState){
         super.onCreate(savedInstanceState);
-        mCrime=new Crime();
+        // mCrime=new Crime();
+        UUID crimeId=(UUID) getActivity().getIntent().getSerializableExtra(EXTRA_CRIME_ID);
+        mCrime=CrimeLab.get(getActivity()).getCrime(crimeId);
     }
 
     // Layout wird nicht von onCreate erzeugt, sondern von dieser Methode, die das aufgeblasene View an die activity gibt, wenn die activity diese methode aufruft
