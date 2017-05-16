@@ -42,6 +42,10 @@ public class Crime {
         return new GregorianCalendar(calendar.get(Calendar.HOUR_OF_DAY),calendar.get(Calendar.MINUTE)).getTime();
     }
     
+    public Date getLongDate(){
+        return mDate;
+    }
+    
     public boolean isSolved(){ return mSolved;}
     public boolean isPoliceRequired(){ return mRequiresPolice;}
 

@@ -59,7 +59,7 @@ public class CrimeListFragment extends Fragment {
             mCrimeRecyclerView.setAdapter(mAdapter); // Zuweiseung des Adapters
         }
         else{
-            mAdapter.notifyDataSetChanged(); // ganze liste wird aktualisiert, obwohl hoechstens ein Crime geaendert wurde -> ineffizient
+            mAdapter.notifyDataSetChanged(); // ganze liste wird aktualisiert, obwohl hoechstens ein Crime geaendert wurde -> ineffizient bei CrimeActivity -- beim pageViewer jedoch das einzig sinnvolle, statt die ganze liste durchzuchecken
         }
         /*else{ // gibt es bereits einen adapter, so benachrichtige ihn, dass sich ein Crime geaendert haben koennte
             // mAdapter.notifyItemChanged(clickedLayoutPosition); // funktioniert nicht mehr, wenn wir von Crime zu Crime wischen koennen
@@ -107,7 +107,7 @@ public class CrimeListFragment extends Fragment {
         public void bind(Crime crime){ // fuettert die Widgets mit Daten aus der Modellschicht
             mCrime=crime;
             mTitleTextView.setText(mCrime.getTitle());
-            mDateTextView.setText(mCrime.getDate().toString());
+            mDateTextView.setText(mCrime.getLongDate().toString());
             mSolvedImageView.setVisibility(crime.isSolved() ? View.VISIBLE:View.GONE);
         }
 
@@ -146,7 +146,7 @@ public class CrimeListFragment extends Fragment {
         public void bind (Crime crime){
             mCrime=crime;
             mTitleTextView.setText(mCrime.getTitle());
-            mDateTextView.setText(mCrime.getDate().toString());
+            mDateTextView.setText(mCrime.getLongDate().toString());
             mSeriousTextView.setText(String.valueOf(mCrime.isPoliceRequired()));
             mSolvedImageView.setVisibility(crime.isSolved() ? View.VISIBLE:View.GONE);
             mCallPolice.setVisibility(crime.isSolved() ? View.GONE:View.VISIBLE); // Verstecke Knopf, wenn der Fall geloest ist
@@ -182,7 +182,7 @@ public class CrimeListFragment extends Fragment {
                 return new CrimeHolder(layoutInflater, parent); // erstellt einen neuen CrimeHolder
             }
             if(viewType==1){
-                return new SeriousCrimeHolder(layoutInflater,parent);
+                return new SeriousCrimeHolder(layoutInflater,parent); // erstellt einen SeriousCrimeHolder
             }
             return null;
         }
