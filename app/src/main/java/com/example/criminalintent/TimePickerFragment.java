@@ -31,7 +31,7 @@ public class TimePickerFragment extends DialogFragment{
         View v= LayoutInflater.from(getActivity()).inflate(R.layout.dialog_time,null);
         // um die integer aus dem datum zu bekommen, muessen wir den umweg ueber ein calendar-objekt gehen.
         Date time=(Date) getArguments().getSerializable(ARG_TIME);
-        Calendar calendar=Calendar.getInstance();
+        final Calendar calendar=Calendar.getInstance();
         calendar.setTime(time);
         int hour=calendar.get(Calendar.HOUR_OF_DAY);
         int minute=calendar.get(Calendar.MINUTE);
@@ -54,7 +54,7 @@ public class TimePickerFragment extends DialogFragment{
                             public void onClick(DialogInterface dialog,int which){
                                 // datum zusammenbasteln
                                 if(Build.VERSION.SDK_INT>=Build.VERSION_CODES.M) {
-                                    Date time = new GregorianCalendar(0, 0, 0, mTimePicker.getHour(), mTimePicker.getMinute(), 0).getTime();
+                                    Date time = new GregorianCalendar(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH), mTimePicker.getHour(), mTimePicker.getMinute(), 0).getTime();
                                     sendResult(Activity.RESULT_OK,time); // wird der knopf gedrueckt, basteln wir uns ein datum aus dem zeug, was der user eingegeben hat, zusammen und schicken es anschliessend an CrimeFragment per intent zurueck
                                 }
                                 else{

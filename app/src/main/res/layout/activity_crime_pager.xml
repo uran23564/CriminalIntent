@@ -1,29 +1,39 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<android.support.v4.view.ViewPager
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/crime_view_pager"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent">
-
-
 <LinearLayout
-android:id="@+id/masterLl"
-android:layout_width="wrap_content"
-android:layout_height="wrap_content"
-android:orientation="vertical" >
-<Button
-    android:layout_width="wrap_content"
-    android:layout_height="wrap_content"
-    android:text="First Crime"
-    android:id="@+id/first_crime_button"/>
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/masterLl"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical" >
 
-    <Button
-        android:layout_width="wrap_content"
+    <android.support.v4.view.ViewPager
+        android:id="@+id/crime_view_pager"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="10">
+    </android.support.v4.view.ViewPager>
+
+    <LinearLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Last Crime"
-        android:id="@+id/last_crime_button"/>
+        android:layout_marginBottom="2dp"
+        android:layout_marginLeft="2dp"
+        android:layout_marginRight="2dp"
+        android:layout_marginTop="2dp"
+        android:orientation="horizontal">
+
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="First Crime"
+            android:id="@+id/first_crime_button"/>
+
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Last Crime"
+            android:id="@+id/last_crime_button"/>
+    </LinearLayout>
 
 </LinearLayout>
-
-</android.support.v4.view.ViewPager>

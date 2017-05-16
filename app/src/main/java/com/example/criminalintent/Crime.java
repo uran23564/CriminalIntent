@@ -1,6 +1,9 @@
 package com.example.criminalintent;
 
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.UUID;
 
 /**
@@ -36,10 +39,11 @@ public class Crime {
         return new GregorianCalendar(calendar.get(Calendar.YEAR),calendar.get(Calendar.MONTH),calendar.get(Calendar.DAY_OF_MONTH)).getTime();
     }
     
-    public Date getTime(){
+    public String getTime(){
         Calendar calendar=Calendar.getInstance();
         calendar.setTime(mDate);
-        return new GregorianCalendar(calendar.get(Calendar.HOUR_OF_DAY),calendar.get(Calendar.MINUTE)).getTime();
+        SimpleDateFormat sdf=new SimpleDateFormat("HH:mm");
+        return sdf.format(calendar.getTime());
     }
     
     public Date getLongDate(){

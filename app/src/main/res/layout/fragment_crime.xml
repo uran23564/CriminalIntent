@@ -39,4 +39,24 @@
         android:layout_height="wrap_content"
         android:text="@string/crime_solved_label"/>
 
+    <CheckBox
+        android:id="@+id/crime_serious"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/crime_serious_label"/>
+
+    <!--
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="First Crime"
+        android:id="@+id/first_crime_button"/>
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Last Crime"
+        android:id="@+id/last_crime_button"/>
+        -->
+
 </LinearLayout>

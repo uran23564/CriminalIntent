@@ -40,7 +40,8 @@ public class CrimePagerActivity extends AppCompatActivity{
         UUID crimeId=(UUID) getIntent().getSerializableExtra(EXTRA_CRIME_ID);
         
         // initialisiere Widgets
-        mViewPager=(ViewPager) findViewById(R.id.crime_view_pager); 
+        mViewPager=(ViewPager) findViewById(R.id.crime_view_pager);
+        mViewPager.setOffscreenPageLimit(0); // keine pages vorladen
         mFirstCrime=(Button) findViewById(R.id.first_crime_button);
         mLastCrime=(Button) findViewById(R.id.last_crime_button);
         
@@ -53,8 +54,8 @@ public class CrimePagerActivity extends AppCompatActivity{
             @Override
             public Fragment getItem(int position){
                 Crime crime=mCrimes.get(position);
-                mFirstCrime.setEnabled(position==0 ? false:true); // knopf deaktivieren, wenn wir an erster stelle sind
-                mLastCrime.setEnabled(position==mCrimes.size()-1 ? false:true); // knopf deaktivieren, wenn wir an letzter stelle sind
+                mFirstCrime.setEnabled(mViewPager.getCurrentItem()==0 ? false:true); // knopf deaktivieren, wenn wir an erster stelle sind
+                mLastCrime.setEnabled(mViewPager.getCurrentItem()==mCrimes.size()-1 ? false:true); // knopf deaktivieren, wenn wir an letzter stelle sind
                 return CrimeFragment.newInstance(crime.getId());
             }
             
@@ -62,6 +63,8 @@ public class CrimePagerActivity extends AppCompatActivity{
             public int getCount(){
                 return mCrimes.size();
             }
+
+
         });
         
         for (int i=0;i<mCrimes.size();i++){
@@ -70,9 +73,9 @@ public class CrimePagerActivity extends AppCompatActivity{
                 break;
             }
         }
-        
 
-        
+
+
         mFirstCrime.setOnClickListener(new View.OnClickListener(){ // zur ersten Untat springen
             @Override
             public void onClick(View v){

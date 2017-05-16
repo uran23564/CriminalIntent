@@ -15,6 +15,7 @@ import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.EditText;
 
+import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -35,7 +36,7 @@ public class CrimeFragment extends Fragment {
     private static final String DIALOG_DATE="DialogDate"; // tag fuer den alertdialog, damit dieser identifiziert und aufgerufen werden kann
     private static final String DIALOG_TIME="DialogTime"; // tag fuer den alertdialog, damit dieser identifiziert und aufgerufen werden kann
     private static int REQUEST_DATE=0; // zum identifizieren des kind-fragments, von dem wir eine antwort erwarten -- hier DatePickerFragment
-    private static int REQUEST_TIME=0; // zum identifizieren des kind-fragments --hier TimePickerFragment
+    private static int REQUEST_TIME=1; // zum identifizieren des kind-fragments --hier TimePickerFragment
 
     private Crime mCrime; // eine Untat aus einer Liste von Untaten (die in CrimeListActivity bzw. CrimeListFragment gemanaged wird), wird in diesem Fragment bearbeitet
     // private UUID[] maybeChangedIds; // moeglicherweise veraenderte Crimes
@@ -45,6 +46,7 @@ public class CrimeFragment extends Fragment {
     private Button mDateButton;
     private Button mTimeButton;
     private CheckBox mSolvedCheckBox;
+    private CheckBox mSeriousCheckBox;
     
     public static CrimeFragment newInstance(UUID crimeId){ // methode wird von einer activity aufgerufen, die dieses fragment mit zusaetzlichen bundles erzeugen moechte -- hier soll dem erzeugten Fragment eine crimeId uebergeben werden
     // public static CrimeFragment newInstance(Crime crime){
@@ -78,6 +80,7 @@ public class CrimeFragment extends Fragment {
         mDateButton=(Button) v.findViewById(R.id.crime_date);
         mTimeButton=(Button) v.findViewById(R.id.crime_time);
         mSolvedCheckBox=(CheckBox) v.findViewById(R.id.crime_solved);
+        mSeriousCheckBox=(CheckBox) v.findViewById(R.id.crime_serious);
 
 
         // Titel setzen
@@ -118,7 +121,7 @@ public class CrimeFragment extends Fragment {
             @Override
             public void onClick(View v){
                 FragmentManager manager=getFragmentManager();
-                TimePickerFragment dialog=TimePickerFragment.newInstance(mCrime.getDate());
+                TimePickerFragment dialog=TimePickerFragment.newInstance(mCrime.getLongDate());
                 dialog.setTargetFragment(CrimeFragment.this,REQUEST_TIME); // TargetFragment ist das Fragment, das Daten von einem anderen Fragment bekommen soll, wenn es zerstoert wird. wir haben somit eine Verbindung zwischen CrimeFragment un DatePickerFragment
                 dialog.show(manager,DIALOG_TIME);
             }
@@ -136,6 +139,15 @@ public class CrimeFragment extends Fragment {
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 mCrime.setSolved(isChecked);
                 //collectChanges(mCrime.getId());
+            }
+        });
+
+        // schwere untat setzen
+        mSeriousCheckBox.setChecked(mCrime.isPoliceRequired());
+        mSeriousCheckBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener(){
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked){
+                mCrime.setPoliceRequired(isChecked);
             }
         });
         
@@ -174,31 +186,32 @@ public class CrimeFragment extends Fragment {
             // collectChanges(mCrime.getId());
         }
         if(requestCode==REQUEST_TIME){
-            /*Date time=(Date) data.getSerializableExtra(TimePickerFragment.EXTRA_TIME);
-            mCrime.setTime(time);*/
+            Date time=(Date) data.getSerializableExtra(TimePickerFragment.EXTRA_TIME);
+            mCrime.setTime(time);
             updateTime();
             // sendResult(Activity.RESULT_OK,mCrime.getId());
             // collectChanges(mCrime.getId());
         }
     }
 
-    
+
+    // Datum anzeigen lassen
     private void updateDate(){
 //         Calendar calendar=Calendar.getInstance();
 //         calendar.setTime(mCrime.getDate());
 //         int year=calendar.get(Calendar.YEAR);
 //         int month=calendar.get(Calendar.MONTH);
 //         int day=calendar.get(Calendar.DAY_OF_MONTH);
-        // TODO: nur Datum anzeigen lassen
-        DateFormat dateFormat = android.text.format.DateFormat.getDateFormat(getApplicationContext());
+        android.text.format.DateFormat dateFormat = new android.text.format.DateFormat();
         mDateButton.setText("Date: " + dateFormat.format("dd.MM.yyyy",mCrime.getDate()));
         // mDateButton.setText(mCrime.getDate().toString());
     }
-    
+
+    // Zeit anzeigen lassen
     private void updateTime(){
-        // TODO: nur Zeit anzeigen lassen
-        DateFormat dateFormat = android.text.format.DateFormat.getDateFormat(getApplicationContext());
-        mDateButton.setText("Date: " + dateFormat.format("HH:mm",mCrime.getDate()));
+        android.text.format.DateFormat dateFormat = new android.text.format.DateFormat();
+        // mTimeButton.setText("Date: " + dateFormat.format("HH:mm",mCrime.getDate()));
+        mTimeButton.setText("Time: " + mCrime.getTime());
         // mTimeButton.setText(mCrime.getDate().toString());
     }
 }
