@@ -74,7 +74,7 @@ public class CrimeListFragment extends Fragment {
                     }
                 }
             }
-            else{
+            else{ // nuetzlich, wenn wir CrimeActivity starten, da wir nur das zuletzt angesehene Crime aktualisieren muessen
                 for (int i=0;i<crimes.size();i++){ // checke, ob letztes gesehene Crime geaendert wurde
                     if(crimes.get(i).getId().equals(lastId)){
                         mAdapter.notifyItemChanged(i);

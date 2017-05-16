@@ -175,7 +175,7 @@ public class CrimeFragment extends Fragment {
         }
         if(requestCode==REQUEST_TIME){
             /*Date time=(Date) data.getSerializableExtra(TimePickerFragment.EXTRA_TIME);
-            mCrime.setDate(time);*/
+            mCrime.setTime(time);*/
             updateTime();
             // sendResult(Activity.RESULT_OK,mCrime.getId());
             // collectChanges(mCrime.getId());
@@ -184,15 +184,21 @@ public class CrimeFragment extends Fragment {
 
     
     private void updateDate(){
-        Calendar calendar=Calendar.getInstance();
-        calendar.setTime(mCrime.getDate());
-        int year=calendar.get(Calendar.YEAR);
-        int month=calendar.get(Calendar.MONTH);
-        int day=calendar.get(Calendar.DAY_OF_MONTH);
-        mDateButton.setText(mCrime.getDate().toString());
+//         Calendar calendar=Calendar.getInstance();
+//         calendar.setTime(mCrime.getDate());
+//         int year=calendar.get(Calendar.YEAR);
+//         int month=calendar.get(Calendar.MONTH);
+//         int day=calendar.get(Calendar.DAY_OF_MONTH);
+        // TODO: nur Datum anzeigen lassen
+        DateFormat dateFormat = android.text.format.DateFormat.getDateFormat(getApplicationContext());
+        mDateButton.setText("Date: " + dateFormat.format("dd.MM.yyyy",mCrime.getDate()));
+        // mDateButton.setText(mCrime.getDate().toString());
     }
     
     private void updateTime(){
-        mTimeButton.setText(mCrime.getDate().toString());
+        // TODO: nur Zeit anzeigen lassen
+        DateFormat dateFormat = android.text.format.DateFormat.getDateFormat(getApplicationContext());
+        mDateButton.setText("Date: " + dateFormat.format("HH:mm",mCrime.getDate()));
+        // mTimeButton.setText(mCrime.getDate().toString());
     }
 }

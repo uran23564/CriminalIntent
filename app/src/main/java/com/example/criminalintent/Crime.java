@@ -23,13 +23,48 @@ public class Crime {
     // getter
     public UUID getId(){ return mId;}
     public String getTitle(){ return mTitle;}
-    public Date getDate(){return mDate;}
+    
+    public Date getDate(){
+        Calendar calendar=Calendar.getInstance();
+        calendar.setTime(mDate);
+//         int year=calendar.get(Calendar.YEAR);
+//         int month=calendar.get(Calendar.MONTH);
+//         int day=calendar.get(Calendar.DAY_OF_MONTH);
+//         Date date=new GregorianCalendar(year,month,day).getTime();
+        // Date date=new GregorianCalendar(calendar.get(Calendar.YEAR),calendar.get(Calendar.MONTH),calendar.get(Calendar.DAY_OF_MONTH)).getTime();
+        // return date;
+        return new GregorianCalendar(calendar.get(Calendar.YEAR),calendar.get(Calendar.MONTH),calendar.get(Calendar.DAY_OF_MONTH)).getTime();
+    }
+    
+    public Date getTime(){
+        Calendar calendar=Calendar.getInstance();
+        calendar.setTime(mDate);
+        return new GregorianCalendar(calendar.get(Calendar.HOUR_OF_DAY),calendar.get(Calendar.MINUTE)).getTime();
+    }
+    
     public boolean isSolved(){ return mSolved;}
     public boolean isPoliceRequired(){ return mRequiresPolice;}
 
+    
     // setter (UUID wird nie veraendert!)
     public void setTitle(String title){mTitle=title;}
-    public void setDate(Date date){mDate=date;}
+    
+    public void setDate(Date date){
+        Calendar calendar=Calendar.getInstance();
+        calendar.setTime(date);
+        Calendar tCalendar=Calendar.getInstance(); // uebernehme alte Zeit
+        tCalendar.setTime(mDate);
+        // mDate=date;
+        mDate=new GregorianCalendar(calendar.get(Calendar.YEAR),calendar.get(Calendar.MONTH),calendar.get(Calendar.DAY_OF_MONTH),tCalendar.get(Calendar.HOUR_OF_DAY),tCalendar.get(Calendar.MINUTE)).getTime();
+    }
+    
+    public void setTime(Date time){
+        Calendar calendar=Calendar.getInstance();
+        calendar.setTime(time);
+        Calendar dCalendar=Calendar.getInstance(); // uebernehme altes datum
+        dCalendar.setTime(time);
+        mDate=new GregorianCalendar(dCalendar.get(Calendar.YEAR),dCalendar.get(Calendar.MONTH),dCalendar.get(Calendar.DAY_OF_MONTH),calendar.get(Calendar.HOUR_OF_DAY),calendar.get(Calendar.MINUTE)).getTime();
+    }
     public void setSolved(boolean solved){mSolved=solved;}
     public void setPoliceRequired(boolean policeRequired){ mRequiresPolice=policeRequired;}
 }

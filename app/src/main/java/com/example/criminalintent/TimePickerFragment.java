@@ -37,11 +37,12 @@ public class TimePickerFragment extends DialogFragment{
         int minute=calendar.get(Calendar.MINUTE);
         
         mTimePicker=(TimePicker) v.findViewById(R.id.dialog_time_picker);
+        // stelle datum des angeklickten crimes ein
         if(Build.VERSION.SDK_INT>=Build.VERSION_CODES.M) { // Methoden stehen nur bei Marshmellow zur Verfuegung
             mTimePicker.setHour(hour);
             mTimePicker.setMinute(minute);
         }
-        else {
+        else { // fuer API-Level kleiner 23
             mTimePicker.setCurrentHour(hour);
             mTimePicker.setCurrentMinute(minute);
         }
