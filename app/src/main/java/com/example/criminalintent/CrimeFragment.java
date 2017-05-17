@@ -8,6 +8,9 @@ import android.support.v4.app.FragmentManager;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
@@ -69,10 +72,10 @@ public class CrimeFragment extends Fragment {
     }
     
     @Override
-    public void onOptionsItemSelected(MenuItem item){ // handlet, was passiert, wenn ein bestimmtes item im menu gedrueckt wurde
+    public boolean onOptionsItemSelected(MenuItem item){ // handlet, was passiert, wenn ein bestimmtes item im menu gedrueckt wurde
         // wenn was gedrueckt wurde, wird true zurueckgeben, damit wir wissen, dass was gedrueckt wurde
         switch(item.getItemId()){
-            case R.id.delete_crime: CrimeLab.get(getActivity()).delete(mCrime);
+            case R.id.delete_crime: CrimeLab.get(getActivity()).deleteCrime(mCrime);
             getActivity().finish();
             return true;
             
@@ -132,7 +135,7 @@ public class CrimeFragment extends Fragment {
             @Override
             public void onClick(View v){
                 FragmentManager manager=getFragmentManager();
-                DatePickerFragment dialog=DatePickerFragment.newInstance(mCrime.getDate());
+                DatePickerFragment dialog=DatePickerFragment.newInstance(mCrime.getLongDate());
                 dialog.setTargetFragment(CrimeFragment.this,REQUEST_DATE); // TargetFragment ist das Fragment, das Daten von einem anderen Fragment bekommen soll, wenn es zerstoert wird. wir haben somit eine Verbindung zwischen CrimeFragment un DatePickerFragment
                 dialog.show(manager,DIALOG_DATE);
             }
@@ -222,8 +225,8 @@ public class CrimeFragment extends Fragment {
     // Datum anzeigen lassen
     private void updateDate(){
         android.text.format.DateFormat dateFormat = new android.text.format.DateFormat();
-        mDateButton.setText("Date: " + dateFormat.format("dd.MM.yyyy",mCrime.getDate()));
-        // mDateButton.setText("Date: " + mCrime.getDate());
+        // mDateButton.setText("Date: " + dateFormat.format("dd.MM.yyyy",mCrime.getDate()));
+        mDateButton.setText("Date: " + mCrime.getDate());
         // mDateButton.setText(mCrime.getDate().toString());
     }
 

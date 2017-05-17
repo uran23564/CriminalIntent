@@ -27,15 +27,16 @@ public class Crime {
     public UUID getId(){ return mId;}
     public String getTitle(){ return mTitle;}
     
-    public Date getDate(){
-    // public string getDate(){
+    // public Date getDate(){
+    public String getDate(){
         Calendar calendar=Calendar.getInstance();
         calendar.setTime(mDate);
-        return new GregorianCalendar(calendar.get(Calendar.YEAR),calendar.get(Calendar.MONTH),calendar.get(Calendar.DAY_OF_MONTH)).getTime();
+        // return new GregorianCalendar(calendar.get(Calendar.YEAR),calendar.get(Calendar.MONTH),calendar.get(Calendar.DAY_OF_MONTH)).getTime();
         // android.text.format.DateFormat dateFormat = new android.text.format.DateFormat();
         // return dateFormat.format("dd.MM.yyyy",calendar.getTime());
         // wuerde das auch mit SimpleDateFormat gehen?
-        // return sdf.format(calendar.getTime());
+        SimpleDateFormat sdf=new SimpleDateFormat("dd.MM.yyyy");
+        return sdf.format(calendar.getTime());
     }
     
     public String getTime(){

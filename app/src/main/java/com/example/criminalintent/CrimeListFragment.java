@@ -4,9 +4,13 @@ import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
@@ -18,17 +22,26 @@ import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
+import static android.view.View.GONE;
+
 /**
  * Created by merz_konstantin on 5/13/17.
  */
 
 public class CrimeListFragment extends Fragment {
     private static final int REQUEST_CODE_CRIME=0;
+    private static final int NOT_SERIOUS_CRIME=0;
+    private static final int SERIOUS_CRIME=1;
+    private static final int EMPTY_VIEW=2;
     private static final String SAVED_SUBTITLE_VISIBLE="subtitle"; // wenn geraet rotiert wird, sollen subtitles (un)sichtbar bleiben
 
     private RecyclerView mCrimeRecyclerView;
     private CrimeAdapter mAdapter; // jedes RecycleView braucht einen Adapter fuer das Erstellen von ViewHolders und die Arbeit
     // mit der Modellschicht
+
+    private TextView mEmptyText;
+    private Button mAddCrimeButton;
+
     private boolean mSubtitleVisible; // ist der Subtitle sichtbar (je nachdem, ob der entsprechende knopf gedrueckt wurde)?
 
     // private UUID lastId; // letzte UUID, die man angeschaut hat
@@ -48,6 +61,19 @@ public class CrimeListFragment extends Fragment {
         mCrimeRecyclerView.setLayoutManager(new LinearLayoutManager(getActivity())); // RecyclerView braucht einen LayoutManager,
         // der die Liste auf dem Screen erzeugt und sie managed.
         // Wir erzeugen hier einen LinearLayoutManager und uebergeben diesen an den RecyclerView.
+
+        mEmptyText=(TextView) view.findViewById(R.id.empty_text);
+        mAddCrimeButton=(Button) view.findViewById(R.id.add_crime);
+        mAddCrimeButton.setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View v){
+                Crime crime=new Crime();
+                CrimeLab.get(getActivity()).addCrime(crime); // erzeugt neues Crime in der Singleton-Liste der vorhandenen Crimes
+
+                Intent intent=CrimePagerActivity.newIntent(getActivity(),crime.getId()); // startet die CrimePagerActivity und zeigt das neu erstellte Crime sofort an, damit man es editieren kann.
+                startActivity(intent);
+            }
+        });
         
         if(savedInstanceState!=null){
             mSubtitleVisible=savedInstanceState.getBoolean(SAVED_SUBTITLE_VISIBLE);
@@ -71,15 +97,15 @@ public class CrimeListFragment extends Fragment {
         MenuItem subtitleItem=menu.findItem(R.id.show_subtitle);
         // jedes mal, wenn auf den show_subtitle-Knopf im Menu gedrueckt wird, soll das Menu neu erstellt werden (dies passiert in der onOptionsItemSelected-Methode) und der entsprechende text geladen werden
         if(mSubtitleVisible){
-            subtitleItem.setTitle(R.string.hide_subtitle);
+            subtitleItem.setTitle(R.string.show_subtitle);
         }
         else{
-            subtitleItem.setTitle(R.string.show_subtitle);
+            subtitleItem.setTitle(R.string.hide_subtitle);
         }
     }
     
     @Override
-    public void onOptionsItemSelected(MenuItem item){ // handlet, was passiert, wenn ein bestimmtes item im menu gedrueckt wurde
+    public boolean onOptionsItemSelected(MenuItem item){ // handlet, was passiert, wenn ein bestimmtes item im menu gedrueckt wurde
         // wenn was gedrueckt wurde, wird true zurueckgeben, damit wir wissen, dass was gedrueckt wurde
         switch(item.getItemId()){
             case R.id.new_crime: Crime crime=new Crime();
@@ -100,8 +126,8 @@ public class CrimeListFragment extends Fragment {
     
     private void updateSubtitle(){
         CrimeLab crimeLab=CrimeLab.get(getActivity());
-        String subtitle=getString(R.string.subtitle_format,crimeLab.getCrimes().size());
-        // String subtitle=getResources().getQuantityString(R.plurals.subtitle_plural,crimeLab.getCrimes().size(),crimeLab.getCrimes().size());
+        // String subtitle=getString(R.string.subtitle_format,crimeLab.getCrimes().size());
+        String subtitle=getResources().getQuantityString(R.plurals.subtitle_plural,crimeLab.getCrimes().size(),crimeLab.getCrimes().size());
         
         if(!mSubtitleVisible){ // wenn der subtitle nicht sichtbar ist, soll er das auch sein^^
             subtitle=null;
@@ -144,8 +170,19 @@ public class CrimeListFragment extends Fragment {
                     }
                 }
             }*/
-        
+
         updateSubtitle(); // wenn wir von CrimeFragment hierher zurueckkehren, soll auch der Subtitle aktualisiert werden (wenn z.B. ein Crime erzeugt oder vernichtet wurde)
+
+        if(crimes.size()==0){
+            mCrimeRecyclerView.setVisibility(GONE);
+            mAddCrimeButton.setVisibility(View.VISIBLE);
+            mEmptyText.setVisibility(View.VISIBLE);
+        }
+        else {
+            mCrimeRecyclerView.setVisibility(View.VISIBLE);
+            mEmptyText.setVisibility(View.GONE);
+            mAddCrimeButton.setVisibility(View.GONE);
+        }
     }
 
 
@@ -171,7 +208,7 @@ public class CrimeListFragment extends Fragment {
             mCrime=crime;
             mTitleTextView.setText(mCrime.getTitle());
             mDateTextView.setText(mCrime.getLongDate().toString());
-            mSolvedImageView.setVisibility(crime.isSolved() ? View.VISIBLE:View.GONE);
+            mSolvedImageView.setVisibility(crime.isSolved() ? View.VISIBLE: GONE);
         }
 
         @Override
@@ -211,8 +248,8 @@ public class CrimeListFragment extends Fragment {
             mTitleTextView.setText(mCrime.getTitle());
             mDateTextView.setText(mCrime.getLongDate().toString());
             mSeriousTextView.setText(String.valueOf(mCrime.isPoliceRequired()));
-            mSolvedImageView.setVisibility(crime.isSolved() ? View.VISIBLE:View.GONE);
-            mCallPolice.setVisibility(crime.isSolved() ? View.GONE:View.VISIBLE); // Verstecke Knopf, wenn der Fall geloest ist
+            mSolvedImageView.setVisibility(crime.isSolved() ? View.VISIBLE: GONE);
+            mCallPolice.setVisibility(crime.isSolved() ? GONE:View.VISIBLE); // Verstecke Knopf, wenn der Fall geloest ist
         }
 
         @Override
@@ -241,10 +278,10 @@ public class CrimeListFragment extends Fragment {
             // Adapter von RecycleView erstellt gerade so viele ViewHolders, wie auf den Bildschirm passen (z. B. Elf). Beim Scrollen
             // werden die Views der Viewholder ersetzt
             LayoutInflater layoutInflater = LayoutInflater.from(getActivity());
-            if(viewType==0) {
+            if(viewType==NOT_SERIOUS_CRIME) {
                 return new CrimeHolder(layoutInflater, parent); // erstellt einen neuen CrimeHolder
             }
-            if(viewType==1){
+            if(viewType==SERIOUS_CRIME){
                 return new SeriousCrimeHolder(layoutInflater,parent); // erstellt einen SeriousCrimeHolder
             }
             return null;
@@ -272,9 +309,15 @@ public class CrimeListFragment extends Fragment {
         @Override
         public int getItemViewType(int position){ // ueberlade getItemViewType, je nachdem, ob das Verbrechen schwerwiegend ist
             if(!mCrimes.get(position).isPoliceRequired()){
-                return 0; // bei normalen Untaten Null zurueckgeben
+                return NOT_SERIOUS_CRIME; // bei normalen Untaten Null zurueckgeben
             }
-            else{ return 1;} // bei schweren Untaten Eins zurueckgeben
+            if(mCrimes.get(position).isPoliceRequired()){
+                return SERIOUS_CRIME; // bei schweren Untaten Eins zurueckgeben
+            }
+            if(mCrimes.size()==0){
+                return EMPTY_VIEW; // wir haben keine crimes --> zeige ein anderes view an
+            }
+            else{ return 0;}
         }
     }
 
