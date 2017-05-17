@@ -24,10 +24,12 @@ import java.util.UUID;
 
 public class CrimeListFragment extends Fragment {
     private static final int REQUEST_CODE_CRIME=0;
+    private static final String SAVED_SUBTITLE_VISIBLE="subtitle"; // wenn geraet rotiert wird, sollen subtitles (un)sichtbar bleiben
 
     private RecyclerView mCrimeRecyclerView;
     private CrimeAdapter mAdapter; // jedes RecycleView braucht einen Adapter fuer das Erstellen von ViewHolders und die Arbeit
     // mit der Modellschicht
+    private boolean mSubtitleVisible; // ist der Subtitle sichtbar (je nachdem, ob der entsprechende knopf gedrueckt wurde)?
 
     // private UUID lastId; // letzte UUID, die man angeschaut hat
     // private UUID[] maybeChangedIds;
@@ -46,6 +48,11 @@ public class CrimeListFragment extends Fragment {
         mCrimeRecyclerView.setLayoutManager(new LinearLayoutManager(getActivity())); // RecyclerView braucht einen LayoutManager,
         // der die Liste auf dem Screen erzeugt und sie managed.
         // Wir erzeugen hier einen LinearLayoutManager und uebergeben diesen an den RecyclerView.
+        
+        if(savedInstanceState!=null){
+            mSubtitleVisible=savedInstanceState.getBoolean(SAVED_SUBTITLE_VISIBLE);
+        }
+        
         updateUI();
         return view;
     }
@@ -60,6 +67,15 @@ public class CrimeListFragment extends Fragment {
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater){ // erzeugt das menu
         super.onCreateOptionsMenu(menu,inflater);
         inflater.inflate(R.menu.fragment_crime_list,menu);
+        
+        MenuItem subtitleItem=menu.findItem(R.id.show_subtitle);
+        // jedes mal, wenn auf den show_subtitle-Knopf im Menu gedrueckt wird, soll das Menu neu erstellt werden (dies passiert in der onOptionsItemSelected-Methode) und der entsprechende text geladen werden
+        if(mSubtitleVisible){
+            subtitleItem.setTitle(R.string.hide_subtitle);
+        }
+        else{
+            subtitleItem.setTitle(R.string.show_subtitle);
+        }
     }
     
     @Override
@@ -73,11 +89,29 @@ public class CrimeListFragment extends Fragment {
             startActivity(intent);
             return true;
             
+            case R.id.show_subtitle: updateSubtitle();
+            mSubtitleVisible=!mSubtitleVisible; // wenn show_subtitle gedrueckt wurde, soll der boolean geupdatet und das menu neu geladen werden. dabei wird der text geupdatet (in der onCreateOptionsMenu-Methode)
+            getActivity().invalidateOptionsMenu();
+            return true;
+            
             default: return super.onOptionsItemSelected(item);
         }
     }
+    
+    private void updateSubtitle(){
+        CrimeLab crimeLab=CrimeLab.get(getActivity());
+        String subtitle=getString(R.string.subtitle_format,crimeLab.getCrimes().size());
+        // String subtitle=getResources().getQuantityString(R.plurals.subtitle_plural,crimeLab.getCrimes().size(),crimeLab.getCrimes().size());
+        
+        if(!mSubtitleVisible){ // wenn der subtitle nicht sichtbar ist, soll er das auch sein^^
+            subtitle=null;
+        }
+        AppCompatActivity activity=(AppCompatActivity) getActivity(); // activity, die CrimeListFragment hostet wird gecastet
+        activity.getSupportActionBar().setSubtitle(subtitle); // subtitle im menu wird aktualisiert
+    }
 
     private void updateUI(){
+        // ViewHolder des RecyclerView sollen aktualisiert werden
         CrimeLab crimeLab=CrimeLab.get(getActivity()); // Singleton crimeLab samt Liste der Crimes wird erzeugt bzw. abgefragt
         List <Crime> crimes=crimeLab.getCrimes(); // die Liste der erzeugten Crimes wird kopiert
 
@@ -110,6 +144,8 @@ public class CrimeListFragment extends Fragment {
                     }
                 }
             }*/
+        
+        updateSubtitle(); // wenn wir von CrimeFragment hierher zurueckkehren, soll auch der Subtitle aktualisiert werden (wenn z.B. ein Crime erzeugt oder vernichtet wurde)
     }
 
 
@@ -253,4 +289,11 @@ public class CrimeListFragment extends Fragment {
             maybeChangedIds=(UUID[]) data.getSerializableExtra(CrimeFragment.EXTRA_UUID);
         }
     }*/
+    
+    @Override
+    public void onSaveInstanceState(Bundle outState){
+        super.onSaveInstanceState(outState);
+        outState.putBoolean(SAVED_SUBTITLE_VISIBLE,mSubtitleVisible);
+    }
+    
 }

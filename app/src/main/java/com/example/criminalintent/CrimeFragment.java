@@ -48,6 +48,7 @@ public class CrimeFragment extends Fragment {
     private CheckBox mSolvedCheckBox;
     private CheckBox mSeriousCheckBox;
     
+    
     public static CrimeFragment newInstance(UUID crimeId){ // methode wird von einer activity aufgerufen, die dieses fragment mit zusaetzlichen bundles erzeugen moechte -- hier soll dem erzeugten Fragment eine crimeId uebergeben werden
     // public static CrimeFragment newInstance(Crime crime){
     // argumente/bundles muessen dem Fragment NACH seiner Erzeugung aber BEVOR es zu einer activity zugefuegt wird, uebergeben wrden
@@ -59,6 +60,26 @@ public class CrimeFragment extends Fragment {
         return fragment;
     }
     
+    
+    // MENU
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater){ // erzeugt das menu
+        super.onCreateOptionsMenu(menu,inflater);
+        inflater.inflate(R.menu.fragment_crime,menu);
+    }
+    
+    @Override
+    public void onOptionsItemSelected(MenuItem item){ // handlet, was passiert, wenn ein bestimmtes item im menu gedrueckt wurde
+        // wenn was gedrueckt wurde, wird true zurueckgeben, damit wir wissen, dass was gedrueckt wurde
+        switch(item.getItemId()){
+            case R.id.delete_crime: CrimeLab.get(getActivity()).delete(mCrime);
+            getActivity().finish();
+            return true;
+            
+            
+            default: return super.onOptionsItemSelected(item);
+        }
+    }
 
     @Override
     public void onCreate(Bundle savedInstanceState){
@@ -67,6 +88,9 @@ public class CrimeFragment extends Fragment {
         UUID crimeId=(UUID) getArguments().getSerializable(ARG_CRIME_ID); // liest die crimeId aus dem Argument, mit dem das Fragment erzeugt wurde
         mCrime=CrimeLab.get(getActivity()).getCrime(crimeId);
         // mCrime=(Crime) getArguments().getSerializable(ARG_CRIME);
+        
+        // teilt dem FragmentManager mit, dass wir ein Menu haben, d.h. CrimeListFragment muss Menu-Callbacks vom OS empfangen koennen
+        setHasOptionsMenu(true);
     }
 
     // Layout wird nicht von onCreate erzeugt, sondern von dieser Methode, die das aufgeblasene View an die activity gibt, wenn die activity diese methode aufruft
