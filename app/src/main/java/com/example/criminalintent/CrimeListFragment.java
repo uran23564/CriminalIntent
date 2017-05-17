@@ -31,6 +31,12 @@ public class CrimeListFragment extends Fragment {
 
     // private UUID lastId; // letzte UUID, die man angeschaut hat
     // private UUID[] maybeChangedIds;
+    
+    @Override
+    public void onCreate(Bundle savedInstanceState){
+        super.onCreate(savedInstanceState);
+        setHasOptionsMenu(true); // teilt dem FragmentManager mit, dass wir ein Menu haben, d.h. CrimeListFragment muss Menu-Callbacks vom OS empfangen koennen
+    }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState){
@@ -48,6 +54,27 @@ public class CrimeListFragment extends Fragment {
     public void onResume(){ // wenn etwas in CrimeActivity bzw. CrimeFragment geaendert wird, soll der RecyclerView aktualisiert werden
         super.onResume();
         updateUI();
+    }
+    
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater){ // erzeugt das menu
+        super.onCreateOptionsMenu(menu,inflater);
+        inflater.inflate(R.menu.fragment_crime_list,menu);
+    }
+    
+    @Override
+    public void onOptionsItemSelected(MenuItem item){ // handlet, was passiert, wenn ein bestimmtes item im menu gedrueckt wurde
+        // wenn was gedrueckt wurde, wird true zurueckgeben, damit wir wissen, dass was gedrueckt wurde
+        switch(item.getItemId()){
+            case R.id.new_crime: Crime crime=new Crime();
+            CrimeLab.get(getActivity()).addCrime(crime); // erzeugt neues Crime in der Singleton-Liste der vorhandenen Crimes
+            
+            Intent intent=CrimePagerActivity.newIntent(getActivity(),crime.getId()); // startet die CrimePagerActivity und zeigt das neu erstellte Crime sofort an, damit man es editieren kann.
+            startActivity(intent);
+            return true;
+            
+            default: return super.onOptionsItemSelected(item);
+        }
     }
 
     private void updateUI(){

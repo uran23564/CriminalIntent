@@ -23,7 +23,7 @@ public class CrimeLab { // Singleton-Klasse
 
     private CrimeLab(Context context){ // privater konstruktor
         mCrimes=new ArrayList<>();
-        // fuer starter erstellen wir selber neue crimes
+        // fuer starter erstellen wir selber neue crimes -- werden wir bald nicht mehr brauchen
         for(int i=0;i<100;i++){
             Crime crime=new Crime();
             crime.setTitle("Crime #" +(i+1));
@@ -42,6 +42,10 @@ public class CrimeLab { // Singleton-Klasse
             }
         }
         return null;
+    }
+    
+    public void addCrime(Crime c){
+        mCrimes.add(c);
     }
 
 }

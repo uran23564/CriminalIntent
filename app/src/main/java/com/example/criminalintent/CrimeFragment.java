@@ -197,19 +197,15 @@ public class CrimeFragment extends Fragment {
 
     // Datum anzeigen lassen
     private void updateDate(){
-//         Calendar calendar=Calendar.getInstance();
-//         calendar.setTime(mCrime.getDate());
-//         int year=calendar.get(Calendar.YEAR);
-//         int month=calendar.get(Calendar.MONTH);
-//         int day=calendar.get(Calendar.DAY_OF_MONTH);
         android.text.format.DateFormat dateFormat = new android.text.format.DateFormat();
         mDateButton.setText("Date: " + dateFormat.format("dd.MM.yyyy",mCrime.getDate()));
+        // mDateButton.setText("Date: " + mCrime.getDate());
         // mDateButton.setText(mCrime.getDate().toString());
     }
 
     // Zeit anzeigen lassen
     private void updateTime(){
-        android.text.format.DateFormat dateFormat = new android.text.format.DateFormat();
+        // android.text.format.DateFormat dateFormat = new android.text.format.DateFormat();
         // mTimeButton.setText("Date: " + dateFormat.format("HH:mm",mCrime.getDate()));
         mTimeButton.setText("Time: " + mCrime.getTime());
         // mTimeButton.setText(mCrime.getDate().toString());
