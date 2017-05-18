@@ -1,6 +1,13 @@
 package com.example.criminalintent;
 
+import android.content.ContentValues;
 import android.content.Context;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
+
+import com.example.criminalintent.database.CrimeBaseHelper;
+import com.example.criminalintent.database.CrimeCursorWrapper;
+import com.example.criminalintent.database.CrimeDbSchema.CrimeTable;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -26,7 +33,7 @@ public class CrimeLab { // Singleton-Klasse
 
     private CrimeLab(Context context){ // privater konstruktor -- initialisiert auch die datenbank bzw. greift auf sie zu bzw. updatet sie, falls sie eine aeltere versionsnummer traegt (all diese arbeiten werden von CrimeBaseHelper und seinen Methoden uebernommen
         mContext=context.getApplicationContext(); // rufe getApplicationContext() auf, da activities kommen und gehen -- der ApplicationContext bleibt jedoch so lange bestehen, bis die ganze app aus dem speicher geloescht wird. dies ist gerade das verhalten, das wir von unserem Singleton wuenschen
-        mDatabase=new CrimeBaseHelper(mContext).getWritableDatabase;
+        mDatabase=new CrimeBaseHelper(mContext).getWritableDatabase();
         // mCrimes=new ArrayList<>(); Ab jetzt nur noch SQL
 
         // fuer starter erstellen wir selber neue crimes -- werden wir bald nicht mehr brauchen
@@ -97,7 +104,7 @@ public class CrimeLab { // Singleton-Klasse
         String uuidString=crime.getId().toString();
         ContentValues values = getContentValues(crime);
         
-        mDatabase.update(CrimeTable.NAME,values,CrimeTable.Cols.UUID+ " = ?",new String[] { uuidString });
+        mDatabase.update(CrimeTable.NAME,values, CrimeTable.Cols.UUID+ " = ?",new String[] { uuidString });
         // letztes argument spezifiziert, welche Reihe aktualisiert werden soll
         // "=?" stellt sicher, dass kein SQL-Code, der im string sein koennte, sondern nur der reine String uebergeben wird
     }
@@ -124,7 +131,7 @@ public class CrimeLab { // Singleton-Klasse
     public void deleteCrime(Crime c){
         // mCrimes.remove(c); ab jetzt nur noch SQL
         ContentValues values=getContentValues(c);
-        mDatabase.delete(CrimeTable.NAME,null,values);
+        mDatabase.delete(CrimeTable.NAME,CrimeTable.Cols.UUID + " = ?", new String[] { c.getId().toString() });
     }
 
 }

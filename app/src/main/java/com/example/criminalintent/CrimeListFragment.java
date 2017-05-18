@@ -147,7 +147,7 @@ public class CrimeListFragment extends Fragment {
             mCrimeRecyclerView.setAdapter(mAdapter); // Zuweiseung des Adapters
         }
         else{
-            setCrimes(crimes);
+            mAdapter.setCrimes(crimes);
             mAdapter.notifyDataSetChanged(); // ganze liste wird aktualisiert, obwohl hoechstens ein Crime geaendert wurde -> ineffizient bei CrimeActivity -- beim pageViewer jedoch das einzig sinnvolle, statt die ganze liste durchzuchecken
         }
         /*else{ // gibt es bereits einen adapter, so benachrichtige ihn, dass sich ein Crime geaendert haben koennte
@@ -307,7 +307,7 @@ public class CrimeListFragment extends Fragment {
         public int getItemCount(){
             return mCrimes.size();
         }
-        
+
         // aktualisiert Crime-Liste, wenn layout neu erzeugt wird
         public void setCrimes(List<Crime> crimes){
             mCrimes=crimes;
@@ -327,6 +327,7 @@ public class CrimeListFragment extends Fragment {
             else{ return 0;}
         }
     }
+
 
 
    /* @Override
