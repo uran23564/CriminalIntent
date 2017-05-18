@@ -18,8 +18,15 @@ public class Crime {
     private boolean mRequiresPolice; // ernsthaftes Verbrechen?
 
     public Crime(){
-        mId=UUID.randomUUID(); // zufaellige, aber eindeutige identifikationsnummer (universally unique ID)
-        mDate=new Date(); // Datum des Geschehens wird auf "heute" gesetzt
+        // mId=UUID.randomUUID(); // zufaellige, aber eindeutige identifikationsnummer (universally unique ID)
+        // mDate=new Date(); // Datum des Geschehens wird auf "heute" gesetzt
+        this(UUID.randomUUID());
+        mRequiresPolice=false; // normalerweise ist die Untat nicht so schlimm
+    }
+    
+    public Crime(UUID id){
+        mId=id;
+        mDate=new Date();
         mRequiresPolice=false; // normalerweise ist die Untat nicht so schlimm
     }
 
@@ -73,6 +80,8 @@ public class Crime {
         dCalendar.setTime(time);
         mDate=new GregorianCalendar(dCalendar.get(Calendar.YEAR),dCalendar.get(Calendar.MONTH),dCalendar.get(Calendar.DAY_OF_MONTH),calendar.get(Calendar.HOUR_OF_DAY),calendar.get(Calendar.MINUTE)).getTime();
     }
+    
+    public void setLongDate(Date date){mDate=date;}
     public void setSolved(boolean solved){mSolved=solved;}
     public void setPoliceRequired(boolean policeRequired){ mRequiresPolice=policeRequired;}
 }

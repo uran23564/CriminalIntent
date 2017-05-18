@@ -17,12 +17,12 @@
     android:id="@+id/empty_text"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:text="There are no crimes at the moment" />
+    android:text="@string/no_crime" />
 
 <Button
     android:id="@+id/add_crime"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:text="Add Crime" />
+    android:text="@string/new_crime" />
 
 </LinearLayout>

@@ -42,7 +42,7 @@ public class CrimeListFragment extends Fragment {
     private TextView mEmptyText;
     private Button mAddCrimeButton;
 
-    private boolean mSubtitleVisible; // ist der Subtitle sichtbar (je nachdem, ob der entsprechende knopf gedrueckt wurde)?
+    private boolean mSubtitleVisible=false; // ist der Subtitle sichtbar (je nachdem, ob der entsprechende knopf gedrueckt wurde)?
 
     // private UUID lastId; // letzte UUID, die man angeschaut hat
     // private UUID[] maybeChangedIds;
@@ -97,10 +97,10 @@ public class CrimeListFragment extends Fragment {
         MenuItem subtitleItem=menu.findItem(R.id.show_subtitle);
         // jedes mal, wenn auf den show_subtitle-Knopf im Menu gedrueckt wird, soll das Menu neu erstellt werden (dies passiert in der onOptionsItemSelected-Methode) und der entsprechende text geladen werden
         if(mSubtitleVisible){
-            subtitleItem.setTitle(R.string.show_subtitle);
+            subtitleItem.setTitle(R.string.hide_subtitle);
         }
         else{
-            subtitleItem.setTitle(R.string.hide_subtitle);
+            subtitleItem.setTitle(R.string.show_subtitle);
         }
     }
     
@@ -115,9 +115,10 @@ public class CrimeListFragment extends Fragment {
             startActivity(intent);
             return true;
             
-            case R.id.show_subtitle: updateSubtitle();
+            case R.id.show_subtitle: 
             mSubtitleVisible=!mSubtitleVisible; // wenn show_subtitle gedrueckt wurde, soll der boolean geupdatet und das menu neu geladen werden. dabei wird der text geupdatet (in der onCreateOptionsMenu-Methode)
             getActivity().invalidateOptionsMenu();
+            updateSubtitle();
             return true;
             
             default: return super.onOptionsItemSelected(item);
@@ -146,6 +147,7 @@ public class CrimeListFragment extends Fragment {
             mCrimeRecyclerView.setAdapter(mAdapter); // Zuweiseung des Adapters
         }
         else{
+            setCrimes(crimes);
             mAdapter.notifyDataSetChanged(); // ganze liste wird aktualisiert, obwohl hoechstens ein Crime geaendert wurde -> ineffizient bei CrimeActivity -- beim pageViewer jedoch das einzig sinnvolle, statt die ganze liste durchzuchecken
         }
         /*else{ // gibt es bereits einen adapter, so benachrichtige ihn, dass sich ein Crime geaendert haben koennte
@@ -304,6 +306,11 @@ public class CrimeListFragment extends Fragment {
         @Override
         public int getItemCount(){
             return mCrimes.size();
+        }
+        
+        // aktualisiert Crime-Liste, wenn layout neu erzeugt wird
+        public void setCrimes(List<Crime> crimes){
+            mCrimes=crimes;
         }
 
         @Override

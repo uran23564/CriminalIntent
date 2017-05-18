@@ -95,6 +95,13 @@ public class CrimeFragment extends Fragment {
         // teilt dem FragmentManager mit, dass wir ein Menu haben, d.h. CrimeListFragment muss Menu-Callbacks vom OS empfangen koennen
         setHasOptionsMenu(true);
     }
+    
+    // wird ein Crime geaendert, so soll die SQL-Datenbank aktualisiert werden
+    @Override
+    public void onPause(){
+        super.onPause();
+        CrimeLab.get(getActivity()).updateCrime(mCrime);
+    }
 
     // Layout wird nicht von onCreate erzeugt, sondern von dieser Methode, die das aufgeblasene View an die activity gibt, wenn die activity diese methode aufruft
     @Override
