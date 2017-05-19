@@ -1,5 +1,7 @@
 package com.example.criminalintent;
 
+import android.net.Uri;
+
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
@@ -16,6 +18,8 @@ public class Crime {
     private Date mDate; // Wann ist die Untat geschehen?
     private boolean mSolved; // Wurde das Verbrechen geloest?
     private boolean mRequiresPolice; // ernsthaftes Verbrechen?
+    private String mSuspect; // Verdaechtiger
+    private Uri mSuspectPhoneNumber; // Telefonnummer des Verdaechtigen
 
     public Crime(){
         // mId=UUID.randomUUID(); // zufaellige, aber eindeutige identifikationsnummer (universally unique ID)
@@ -59,6 +63,8 @@ public class Crime {
     
     public boolean isSolved(){ return mSolved;}
     public boolean isPoliceRequired(){ return mRequiresPolice;}
+    public String getSuspect(){ return mSuspect;}
+    public Uri getSuspectPhoneNumber(){ return mSuspectPhoneNumber; }
 
     
     // setter (UUID wird nie veraendert!)
@@ -84,4 +90,6 @@ public class Crime {
     public void setLongDate(Date date){mDate=date;}
     public void setSolved(boolean solved){mSolved=solved;}
     public void setPoliceRequired(boolean policeRequired){ mRequiresPolice=policeRequired;}
+    public void setSuspect(String suspect){mSuspect=suspect;}
+    // public void setSuspectPhoneNumber(Uri number){mSuspectPhoneNumber=number;}
 }

@@ -2,9 +2,14 @@ package com.example.criminalintent;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.database.Cursor;
+import android.net.Uri;
 import android.os.Bundle;
+import android.provider.ContactsContract;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
+import android.support.v4.app.ShareCompat;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.LayoutInflater;
@@ -40,6 +45,7 @@ public class CrimeFragment extends Fragment {
     private static final String DIALOG_TIME="DialogTime"; // tag fuer den alertdialog, damit dieser identifiziert und aufgerufen werden kann
     private static int REQUEST_DATE=0; // zum identifizieren des kind-fragments, von dem wir eine antwort erwarten -- hier DatePickerFragment
     private static int REQUEST_TIME=1; // zum identifizieren des kind-fragments --hier TimePickerFragment
+    private static int REQUEST_CONTACT=2; // wir erwarten eine antwort von der kontakt-app
 
     private Crime mCrime; // eine Untat aus einer Liste von Untaten (die in CrimeListActivity bzw. CrimeListFragment gemanaged wird), wird in diesem Fragment bearbeitet
     // private UUID[] maybeChangedIds; // moeglicherweise veraenderte Crimes
@@ -50,6 +56,9 @@ public class CrimeFragment extends Fragment {
     private Button mTimeButton;
     private CheckBox mSolvedCheckBox;
     private CheckBox mSeriousCheckBox;
+    private Button mReportButton;
+    private Button mSuspectButton;
+    private Button mCallButton;
     
     
     public static CrimeFragment newInstance(UUID crimeId){ // methode wird von einer activity aufgerufen, die dieses fragment mit zusaetzlichen bundles erzeugen moechte -- hier soll dem erzeugten Fragment eine crimeId uebergeben werden
@@ -109,12 +118,17 @@ public class CrimeFragment extends Fragment {
         View v=inflater.inflate(R.layout.fragment_crime,container,false);
         // wir werden den view im code der activity schreiben, weshalb dritter parameter false ist
 
+        final Intent pickContact=new Intent(Intent.ACTION_PICK, ContactsContract.Contacts.CONTENT_URI);
+
         // widgets konfigurieren
         mTitleField=(EditText) v.findViewById(R.id.crime_title); // findViewById muss vom view des fragments aufgerufen werden
         mDateButton=(Button) v.findViewById(R.id.crime_date);
         mTimeButton=(Button) v.findViewById(R.id.crime_time);
         mSolvedCheckBox=(CheckBox) v.findViewById(R.id.crime_solved);
         mSeriousCheckBox=(CheckBox) v.findViewById(R.id.crime_serious);
+        mReportButton=(Button) v.findViewById(R.id.crime_report);
+        mSuspectButton=(Button) v.findViewById(R.id.crime_suspect);
+        mCallButton=(Button) v.findViewById(R.id.crime_call);
 
 
         // Titel setzen
@@ -135,6 +149,7 @@ public class CrimeFragment extends Fragment {
                 // TODO
             }
         });
+
 
         // Datum setzen
         updateDate();
@@ -160,10 +175,6 @@ public class CrimeFragment extends Fragment {
                 dialog.show(manager,DIALOG_TIME);
             }
         });
-
-              
-
-        
         
         
         // Fall geloest setzen
@@ -184,7 +195,53 @@ public class CrimeFragment extends Fragment {
                 mCrime.setPoliceRequired(isChecked);
             }
         });
-        
+
+        // Fall abschicken
+        // hier braucht der implicit intent nur eine action
+        mReportButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent=new Intent(Intent.ACTION_SEND);
+                intent.setType("text/plain"); // Typ kann nicht im konstruktor spezifiziert werden, deshalb wird er separat gesetzt
+                intent.putExtra(Intent.EXTRA_TEXT,getCrimeReport()); // bericht wird uebergeben
+                intent.putExtra(Intent.EXTRA_SUBJECT,getString(R.string.crime_report_subject)); // titel des berichts -- standardtitel hier
+                intent=Intent.createChooser(intent,getString(R.string.send_report)); // zeige immer eine liste der apps an, die die aufgabe uebernehmen kann. zeige zusaetzlich einen titel
+                ShareCompat.IntentBuilder intent2=(ShareCompat.IntentBuilder.from(getActivity()));
+                intent2.setSubject(getString(R.string.crime_report_subject));
+                intent2.setText(getString(R.string.send_report));
+                startActivity(intent);
+            }
+        });
+
+        // durchsuche kontakte -- verwende dazu obigen pickContact-Intent
+        mSuspectButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startActivityForResult(pickContact,REQUEST_CONTACT); // resultat wird ein pointer (genauer gesagt ein contactUri-Objekt) auf den geklickten namen sein. den werden wir in onActivityResult auslesen
+            }
+        });
+
+        // rufe verdaechtigen an
+        mCallButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent=new Intent(Intent.ACTION_DIAL);
+                intent.putExtra(Intent.EXTRA_PHONE_NUMBER,mCrime.getSuspectPhoneNumber());
+                startActivity(intent);
+            }
+        });
+
+        if(mCrime.getSuspect()!=null){
+            mSuspectButton.setText(mCrime.getSuspect());
+        }
+
+
+        // checke, ob wir eine app haben, die kontakte auslesen kann (wenn es keine gibt, und der user klicken koennte, wuerde die app crashen)
+        PackageManager packageManager=getActivity().getPackageManager();
+        if(packageManager.resolveActivity(pickContact,PackageManager.MATCH_DEFAULT_ONLY)==null){ // MATCH_DEFAULT_ONLY restringiert die suche auf activities mit CATEGORY_DEFAULT-flag (d.h., es muss activities geben,
+            // die die aufgabe tatsaechlich freiwillig uebernehmen wollen; wenn die suche erfolgreich ist, bekommen wir eine instanz von ResolveInfo, die uns alles ueber die gefundene activity sagt
+            mSuspectButton.setEnabled(false);
+        }
 
         return v;
     }
@@ -219,12 +276,37 @@ public class CrimeFragment extends Fragment {
             // sendResult(Activity.RESULT_OK,mCrime.getId());
             // collectChanges(mCrime.getId());
         }
+
         if(requestCode==REQUEST_TIME){
             Date time=(Date) data.getSerializableExtra(TimePickerFragment.EXTRA_TIME);
             mCrime.setTime(time);
             updateTime();
             // sendResult(Activity.RESULT_OK,mCrime.getId());
             // collectChanges(mCrime.getId());
+        }
+
+        else if(requestCode==REQUEST_CONTACT && data!=null){
+            Uri contactUri=data.getData(); // zeigt auf den geklickten kontakt
+            // welche Teile des kontakts wollen wir auslesen?
+            String[] queryFields=new String[]{ ContactsContract.Contacts.DISPLAY_NAME, ContactsContract.CommonDataKinds.Phone.NUMBER};
+            // fuehre anfrage aus; daten von einem ContactProvider (wie kontakten) bekommen wir mittels eines wrappers, dem ContactResolver
+            // Instanzen von ContactProvidern wrappen Datenbanken
+            Cursor c=getActivity().getContentResolver().query(contactUri,queryFields,null,null,null); // zeigt auf die zeile, die wir von data bekommen haben
+            try{
+                // pruefen, ob wir was zurueckbekommen haben
+                if(c.getCount()==0){
+                    return;
+                }
+                // lese die erste spalte aus -- dies ist der name des kontakts
+                c.moveToFirst();
+                String suspect=c.getString(0);
+                mCrime.setSuspect(suspect);
+                // TODO ermittle telefonnummer
+                mSuspectButton.setText(suspect);
+            }
+            finally{
+                c.close(); // aufraeumen nicht vergessen!
+            }
         }
     }
 
@@ -243,5 +325,40 @@ public class CrimeFragment extends Fragment {
         // mTimeButton.setText("Date: " + dateFormat.format("HH:mm",mCrime.getDate()));
         mTimeButton.setText("Time: " + mCrime.getTime());
         // mTimeButton.setText(mCrime.getDate().toString());
+    }
+
+
+    // Stellt den String fuer den CrimeReport zusammen
+    private String getCrimeReport(){
+        String solvedString=null;
+        if(mCrime.isSolved()){
+            solvedString=getString(R.string.crime_report_solved);
+        }
+        else{
+            solvedString=getString(R.string.crime_report_unsolved);
+        }
+
+        String seriousString=null;
+        if(mCrime.isPoliceRequired()){
+            seriousString=getString(R.string.crime_report_serious);
+        }
+        else{
+            seriousString=getString(R.string.crime_report_not_serious);
+        }
+
+        String dateFormat="EEE, MMM dd";
+        String dateString=android.text.format.DateFormat.format(dateFormat,mCrime.getLongDate()).toString();
+
+        String suspect=mCrime.getSuspect();
+        if(suspect==null){
+            suspect=getString(R.string.crime_report_no_suspect);
+        }
+        else{
+            suspect=getString(R.string.crime_report_suspect);
+        }
+
+        String report=getString(R.string.crime_report,mCrime.getTitle(),dateString,solvedString,seriousString,suspect);
+
+        return report;
     }
 }

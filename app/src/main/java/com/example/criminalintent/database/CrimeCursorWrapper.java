@@ -5,8 +5,10 @@ import android.database.Cursor;
 import android.database.CursorWrapper;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.net.Uri;
 
 import com.example.criminalintent.Crime;
+import com.example.criminalintent.database.CrimeDbSchema.CrimeTable;
 
 import java.util.Date;
 import java.util.UUID;
@@ -22,17 +24,21 @@ public class CrimeCursorWrapper extends CursorWrapper{
     
     // importiere CrimeTable
     public Crime getCrime(){
-        String uuidString=getString(getColumnIndex(CrimeDbSchema.CrimeTable.Cols.UUID));
-        String title=getString(getColumnIndex(CrimeDbSchema.CrimeTable.Cols.TITLE));
-        long date=getLong(getColumnIndex(CrimeDbSchema.CrimeTable.Cols.DATE));
-        int isSolved=getInt(getColumnIndex(CrimeDbSchema.CrimeTable.Cols.SOLVED));
-        int isSerious=getInt(getColumnIndex(CrimeDbSchema.CrimeTable.Cols.SERIOUS));
+        String uuidString=getString(getColumnIndex(CrimeTable.Cols.UUID));
+        String title=getString(getColumnIndex(CrimeTable.Cols.TITLE));
+        long date=getLong(getColumnIndex(CrimeTable.Cols.DATE));
+        int isSolved=getInt(getColumnIndex(CrimeTable.Cols.SOLVED));
+        int isSerious=getInt(getColumnIndex(CrimeTable.Cols.SERIOUS));
+        String suspect=getString(getColumnIndex(CrimeTable.Cols.SUSPECT));
+        // Uri phoneNumber=Uri.parse(getColumnIndex(CrimeTable.Cols.PHONENUMBER));
         
         Crime crime=new Crime(UUID.fromString(uuidString));
         crime.setTitle(title); // importiere java.util.date, NICHT java.sql.date
         crime.setLongDate(new Date(date));
         crime.setSolved(isSolved!=0);
         crime.setPoliceRequired(isSerious!=0);
+        crime.setSuspect(suspect);
+        // crime.setSuspectPhoneNumber(phoneNumber);
         
         return crime;
     }
