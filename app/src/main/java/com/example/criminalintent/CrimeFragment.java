@@ -88,7 +88,6 @@ public class CrimeFragment extends Fragment {
     // argumente/bundles muessen dem Fragment NACH seiner Erzeugung aber BEVOR es zu einer activity zugefuegt wird, uebergeben wrden
         Bundle args=new Bundle();
         args.putSerializable(ARG_CRIME_ID,crimeId); // speichert die vom Caller (CrimeActivity) uebergebene crimeId ab
-        // args.putSerializable(ARG_CRIME,crime);
         CrimeFragment fragment=new CrimeFragment();
         fragment.setArguments(args); // uebergibt dem neu erzeugten Fragment die erzeugten Argumente
         return fragment;
@@ -116,8 +115,7 @@ public class CrimeFragment extends Fragment {
             case R.id.delete_crime: CrimeLab.get(getActivity()).deleteCrime(mCrime);
             getActivity().finish();
             return true;
-            
-            
+
             default: return super.onOptionsItemSelected(item);
         }
     }
@@ -340,7 +338,7 @@ public class CrimeFragment extends Fragment {
         getActivity().setResult(resultCode,intent);
     }*/
 
-    // ueberschreibt die onActivityResult-Methode, um mit der Antwort von DatePickerFragment umgehen zu koennen
+    // ueberschreibt die onActivityResult-Methode, um mit der Antwort von DatePickerFragment, etc umgehen zu koennen
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data){
         if(resultCode!= RESULT_OK){
@@ -387,9 +385,9 @@ public class CrimeFragment extends Fragment {
                 suspectId=c.getString(c.getColumnIndex(ContactsContract.Contacts._ID));
                 boolean hasPhone=Integer.parseInt(c.getString(c.getColumnIndex(ContactsContract.Contacts.HAS_PHONE_NUMBER)))>0; // checke, ob kontakt eine telefonnummer hat
                 if(hasPhone){
-                    Cursor cp=getActivity().getContentResolver().query(ContactsContract.CommonDataKinds.Phone.CONTENT_URI,
+                    Cursor cp=getActivity().getContentResolver().query(ContactsContract.CommonDataKinds.Phone.CONTENT_URI, // lies gesamte datenbank ein
                                                                         null,
-                                                                        ContactsContract.CommonDataKinds.Phone.CONTACT_ID + " = ? ",
+                                                                        ContactsContract.CommonDataKinds.Phone.CONTACT_ID + " = ? ", // selektiere die telefonnummer entsprechend unserer id
                                                                         new String[] {suspectId}, null);
                     try {
                         if (cp.getCount() == 0) {
@@ -399,7 +397,7 @@ public class CrimeFragment extends Fragment {
                         suspectNumber=cp.getString(cp.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER));
                     }
                     finally {
-                        cp.close();
+                        cp.close(); // aufraeumen nicht vergessen!
                     }
                 }
                 else{

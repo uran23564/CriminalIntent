@@ -8,6 +8,7 @@ import android.support.v4.app.Fragment;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.helper.ItemTouchHelper;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -45,10 +46,12 @@ public class CrimeListFragment extends Fragment {
 
     private boolean mSubtitleVisible=false; // ist der Subtitle sichtbar (je nachdem, ob der entsprechende knopf gedrueckt wurde)?
     private Callbacks mCallbacks;
+    private ItemTouchHelper mIth;
 
     // Interface zur Kommunikation mit hostenden Activities
     public interface Callbacks{
-        void onCrimeSelected(Crime crime);
+        void onCrimeSelected(Crime crime); // implementierte Methode soll CrimeFragment anzeigen
+        void onCrimeSwiped(Crime crime); // implementiert Methode zum Loeschen eines Crimes
     }
 
     @Override
@@ -74,7 +77,33 @@ public class CrimeListFragment extends Fragment {
         mCrimeRecyclerView.setLayoutManager(new LinearLayoutManager(getActivity())); // RecyclerView braucht einen LayoutManager,
         // der die Liste auf dem Screen erzeugt und sie managed.
         // Wir erzeugen hier einen LinearLayoutManager und uebergeben diesen an den RecyclerView.
+        // touchHelper.attachToRecyclerView(mCrimeRecyclerView);
+        mIth = new ItemTouchHelper(new ItemTouchHelper.SimpleCallback(ItemTouchHelper.UP | ItemTouchHelper.DOWN,ItemTouchHelper.LEFT) {
+                    public  boolean onMove(RecyclerView recyclerView,
+                                           RecyclerView.ViewHolder viewHolder, RecyclerView.ViewHolder target) {
+                        final int fromPos = viewHolder.getAdapterPosition();
+                        final int toPos = target.getAdapterPosition();
+                        // move item in `fromPos` to `toPos` in adapter.
+                        return true;// true if moved, false otherwise
+                    }
 
+                    public void onSwiped(RecyclerView.ViewHolder viewHolder, int direction) {
+                        // remove from adapter
+                        final int pos=viewHolder.getAdapterPosition();
+                        Crime crime=mAdapter.getCrimes().get(pos);
+                        if(direction==ItemTouchHelper.LEFT){
+                            mCallbacks.onCrimeSwiped(crime);
+                        }
+                        else if(direction==ItemTouchHelper.RIGHT){
+                            mCallbacks.onCrimeSelected(crime);
+                        }
+                        updateUI();
+                    }
+                });
+        mIth.attachToRecyclerView(mCrimeRecyclerView);
+
+
+        // Widgets
         mEmptyText=(TextView) view.findViewById(R.id.empty_text);
         mAddCrimeButton=(Button) view.findViewById(R.id.add_crime);
         mAddCrimeButton.setOnClickListener(new View.OnClickListener(){
@@ -88,7 +117,8 @@ public class CrimeListFragment extends Fragment {
                 mCallbacks.onCrimeSelected(crime);
             }
         });
-        
+
+        // member-variablen laden
         if(savedInstanceState!=null){
             mSubtitleVisible=savedInstanceState.getBoolean(SAVED_SUBTITLE_VISIBLE);
         }
@@ -233,7 +263,6 @@ public class CrimeListFragment extends Fragment {
         public void onClick(View view){
             // Toast.makeText(getActivity(),mCrime.getTitle()+ " clicked!",Toast.LENGTH_SHORT).show();
             // Intent intent=CrimeActivity.newIntent(getActivity(),mCrime.getId());
-            // Intent intent=CrimeActivity.newIntent(getActivity(),mCrime);
 
             /*Intent intent=CrimePagerActivity.newIntent(getActivity(),mCrime.getId());
             startActivityForResult(intent,REQUEST_CODE_CRIME); // lade CrimeActivity mit zugehoeriger Id der Untat
@@ -278,7 +307,6 @@ public class CrimeListFragment extends Fragment {
         public void onClick(View view){
             // Toast.makeText(getActivity(),mCrime.getTitle()+ " clicked!",Toast.LENGTH_SHORT).show();
             // Intent intent=CrimeActivity.newIntent(getActivity(),mCrime.getId());
-            // Intent intent=CrimeActivity.newIntent(getActivity(),mCrime);
 
             /*Intent intent=CrimePagerActivity.newIntent(getActivity(),mCrime.getId());
             startActivityForResult(intent,REQUEST_CODE_CRIME); // lade CrimeActivity mit zugehoeriger Id der Untat
@@ -298,6 +326,8 @@ public class CrimeListFragment extends Fragment {
         public CrimeAdapter(List<Crime> crimes){ // Konstruktor
             mCrimes=crimes; // Zuweisung der Crime-Liste aus dem Singleton
         }
+
+        public List<Crime> getCrimes(){ return mCrimes;}
 
         @Override
         public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType){ // Adapter erstellt die ViewHolder
@@ -326,6 +356,8 @@ public class CrimeListFragment extends Fragment {
                 seriousCrimeHolder.bind(mCrimes.get(position));
             }
         }
+
+
 
         @Override
         public int getItemCount(){
