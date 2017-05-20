@@ -1,6 +1,7 @@
 package com.example.criminalintent;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -43,6 +44,18 @@ public class CrimeListFragment extends Fragment {
     private Button mAddCrimeButton;
 
     private boolean mSubtitleVisible=false; // ist der Subtitle sichtbar (je nachdem, ob der entsprechende knopf gedrueckt wurde)?
+    private Callbacks mCallbacks;
+
+    // Interface zur Kommunikation mit hostenden Activities
+    public interface Callbacks{
+        void onCrimeSelected(Crime crime);
+    }
+
+    @Override
+    public void onAttach(Context context){ // Fragment wird an Activity (durch context identifiziert) geklebt, sodass Fragment seine Methoden verwenden kann
+        super.onAttach(context);
+        mCallbacks=(Callbacks) context;
+    }
 
     // private UUID lastId; // letzte UUID, die man angeschaut hat
     // private UUID[] maybeChangedIds;
@@ -70,8 +83,9 @@ public class CrimeListFragment extends Fragment {
                 Crime crime=new Crime();
                 CrimeLab.get(getActivity()).addCrime(crime); // erzeugt neues Crime in der Singleton-Liste der vorhandenen Crimes
 
-                Intent intent=CrimePagerActivity.newIntent(getActivity(),crime.getId()); // startet die CrimePagerActivity und zeigt das neu erstellte Crime sofort an, damit man es editieren kann.
-                startActivity(intent);
+                /*Intent intent=CrimePagerActivity.newIntent(getActivity(),crime.getId()); // startet die CrimePagerActivity und zeigt das neu erstellte Crime sofort an, damit man es editieren kann.
+                startActivity(intent);*/
+                mCallbacks.onCrimeSelected(crime);
             }
         });
         
@@ -111,8 +125,10 @@ public class CrimeListFragment extends Fragment {
             case R.id.new_crime: Crime crime=new Crime();
             CrimeLab.get(getActivity()).addCrime(crime); // erzeugt neues Crime in der Singleton-Liste der vorhandenen Crimes
             
-            Intent intent=CrimePagerActivity.newIntent(getActivity(),crime.getId()); // startet die CrimePagerActivity und zeigt das neu erstellte Crime sofort an, damit man es editieren kann.
-            startActivity(intent);
+            /*Intent intent=CrimePagerActivity.newIntent(getActivity(),crime.getId()); // startet die CrimePagerActivity und zeigt das neu erstellte Crime sofort an, damit man es editieren kann.
+            startActivity(intent);*/ // alt; jetzt verwenden wir Callbacks, um zwischen Layouts unterscheiden zu koennen
+            updateUI(); // bevor ein Crime auf dem Tablet ausgewaehlt wird, muessen wir die Liste nochmals aktualisieren
+            mCallbacks.onCrimeSelected(crime);
             return true;
             
             case R.id.show_subtitle: 
@@ -137,7 +153,7 @@ public class CrimeListFragment extends Fragment {
         activity.getSupportActionBar().setSubtitle(subtitle); // subtitle im menu wird aktualisiert
     }
 
-    private void updateUI(){
+    public void updateUI(){ // wird auch von CrimeFragment aufgerufen, da die Liste nicht aktualisiert wird, wenn ein Crime geaendert wurde
         // ViewHolder des RecyclerView sollen aktualisiert werden
         CrimeLab crimeLab=CrimeLab.get(getActivity()); // Singleton crimeLab samt Liste der Crimes wird erzeugt bzw. abgefragt
         List <Crime> crimes=crimeLab.getCrimes(); // die Liste der erzeugten Crimes wird kopiert
@@ -218,8 +234,12 @@ public class CrimeListFragment extends Fragment {
             // Toast.makeText(getActivity(),mCrime.getTitle()+ " clicked!",Toast.LENGTH_SHORT).show();
             // Intent intent=CrimeActivity.newIntent(getActivity(),mCrime.getId());
             // Intent intent=CrimeActivity.newIntent(getActivity(),mCrime);
-            Intent intent=CrimePagerActivity.newIntent(getActivity(),mCrime.getId());
+
+            /*Intent intent=CrimePagerActivity.newIntent(getActivity(),mCrime.getId());
             startActivityForResult(intent,REQUEST_CODE_CRIME); // lade CrimeActivity mit zugehoeriger Id der Untat
+            */
+            mCallbacks.onCrimeSelected(mCrime);
+
             // startActivity(intent); // lade CrimeActivity mit zugehoeriger Id der Untat
         }
 
@@ -259,8 +279,12 @@ public class CrimeListFragment extends Fragment {
             // Toast.makeText(getActivity(),mCrime.getTitle()+ " clicked!",Toast.LENGTH_SHORT).show();
             // Intent intent=CrimeActivity.newIntent(getActivity(),mCrime.getId());
             // Intent intent=CrimeActivity.newIntent(getActivity(),mCrime);
-            Intent intent=CrimePagerActivity.newIntent(getActivity(),mCrime.getId());
+
+            /*Intent intent=CrimePagerActivity.newIntent(getActivity(),mCrime.getId());
             startActivityForResult(intent,REQUEST_CODE_CRIME); // lade CrimeActivity mit zugehoeriger Id der Untat
+            */
+
+            mCallbacks.onCrimeSelected(mCrime);
             // startActivity(intent); // lade CrimeActivity mit zugehoeriger Id der Untat
         }
     }
@@ -345,6 +369,12 @@ public class CrimeListFragment extends Fragment {
     public void onSaveInstanceState(Bundle outState){
         super.onSaveInstanceState(outState);
         outState.putBoolean(SAVED_SUBTITLE_VISIBLE,mSubtitleVisible);
+    }
+
+    @Override
+    public void onDetach(){
+        super.onDetach();
+        mCallbacks=null;
     }
     
 }

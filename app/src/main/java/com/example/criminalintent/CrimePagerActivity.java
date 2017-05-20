@@ -15,7 +15,8 @@ import java.util.List;
 import java.util.UUID;
 
 
-public class CrimePagerActivity extends AppCompatActivity{
+public class CrimePagerActivity extends AppCompatActivity implements CrimeFragment.Callbacks{ // implementiert Callbacks als hostende Activity von CrimeFragment, damit die Liste der Crimes aktualisiert werden kann,
+    // wenn ein Crime geaendert wurde
     private static final String EXTRA_CRIME_ID="com.example.criminalintent.crime_id";
     // private static final String EXTRA_CRIME="com.example.criminalintent.crime";
 
@@ -89,5 +90,10 @@ public class CrimePagerActivity extends AppCompatActivity{
                 mViewPager.setCurrentItem(mCrimes.size()-1);
             }
         });
+    }
+
+    @Override
+    public void onCrimeUpdated(Crime crime){
+
     }
 }

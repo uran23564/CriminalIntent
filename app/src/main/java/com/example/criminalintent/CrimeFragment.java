@@ -1,6 +1,7 @@
 package com.example.criminalintent;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
@@ -61,6 +62,7 @@ public class CrimeFragment extends Fragment {
     private Crime mCrime; // eine Untat aus einer Liste von Untaten (die in CrimeListActivity bzw. CrimeListFragment gemanaged wird), wird in diesem Fragment bearbeitet
     // private UUID[] maybeChangedIds; // moeglicherweise veraenderte Crimes
     // private int counterChangedIds; // Zaehler der moeglicherweise veraenderten Crimes
+    private Callbacks mCallbacks;
 
     private EditText mTitleField;
     private Button mDateButton;
@@ -73,6 +75,12 @@ public class CrimeFragment extends Fragment {
     private ImageButton mPhotoButton;
     private ImageView mPhotoView;
     private File mPhotoFile;
+
+
+    // Callbacks-Interface, um Methoden der hostenden Activity verwenden zu koennen
+    public interface Callbacks{
+        void onCrimeUpdated(Crime crime);
+    }
     
     
     public static CrimeFragment newInstance(UUID crimeId){ // methode wird von einer activity aufgerufen, die dieses fragment mit zusaetzlichen bundles erzeugen moechte -- hier soll dem erzeugten Fragment eine crimeId uebergeben werden
@@ -85,7 +93,14 @@ public class CrimeFragment extends Fragment {
         fragment.setArguments(args); // uebergibt dem neu erzeugten Fragment die erzeugten Argumente
         return fragment;
     }
-    
+
+
+    @Override
+    public void onAttach(Context context){
+        super.onAttach(context);
+        mCallbacks=(Callbacks) context;
+    }
+
     
     // MENU
     @Override
@@ -128,6 +143,12 @@ public class CrimeFragment extends Fragment {
         CrimeLab.get(getActivity()).updateCrime(mCrime);
     }
 
+    @Override
+    public void onDetach(){
+        super.onDetach();
+        mCallbacks=null;
+    }
+
     // Layout wird nicht von onCreate erzeugt, sondern von dieser Methode, die das aufgeblasene View an die activity gibt, wenn die activity diese methode aufruft
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState){
@@ -165,6 +186,7 @@ public class CrimeFragment extends Fragment {
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count){
                 mCrime.setTitle(s.toString());
+                updateCrime();
             }
 
             @Override
@@ -207,6 +229,7 @@ public class CrimeFragment extends Fragment {
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 mCrime.setSolved(isChecked);
                 //collectChanges(mCrime.getId());
+                updateCrime();
             }
         });
 
@@ -216,6 +239,7 @@ public class CrimeFragment extends Fragment {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked){
                 mCrime.setPoliceRequired(isChecked);
+                updateCrime();
             }
         });
 
@@ -296,8 +320,6 @@ public class CrimeFragment extends Fragment {
             // die die aufgabe tatsaechlich freiwillig uebernehmen wollen; wenn die suche erfolgreich ist, bekommen wir eine instanz von ResolveInfo, die uns alles ueber die gefundene activity sagt
             mSuspectButton.setEnabled(false);
         }
-
-
         return v;
     }
 
@@ -327,6 +349,7 @@ public class CrimeFragment extends Fragment {
         if(requestCode==REQUEST_DATE){
             Date date=(Date) data.getSerializableExtra(DatePickerFragment.EXTRA_DATE);
             mCrime.setDate(date);
+            updateCrime();
             updateDate();
             // sendResult(Activity.RESULT_OK,mCrime.getId());
             // collectChanges(mCrime.getId());
@@ -335,6 +358,7 @@ public class CrimeFragment extends Fragment {
         if(requestCode==REQUEST_TIME){
             Date time=(Date) data.getSerializableExtra(TimePickerFragment.EXTRA_TIME);
             mCrime.setTime(time);
+            updateCrime();
             updateTime();
             // sendResult(Activity.RESULT_OK,mCrime.getId());
             // collectChanges(mCrime.getId());
@@ -381,6 +405,7 @@ public class CrimeFragment extends Fragment {
                 else{
                     mCallButton.setEnabled(false);
                 }
+                updateCrime();
                 mCrime.setSuspect(suspectName);
                 mSuspectButton.setText(suspectName);
                 mCrime.setSuspectPhoneNumber(suspectNumber);
@@ -395,13 +420,20 @@ public class CrimeFragment extends Fragment {
         else if(requestCode==REQUEST_PHOTO){
             Uri uri= FileProvider.getUriForFile(getActivity(),"com.example.criminalintent.fileprovider",mPhotoFile);
             getActivity().revokeUriPermission(uri,Intent.FLAG_GRANT_WRITE_URI_PERMISSION); // nun duerfen die apps keine fotos mehr speichern
+            updateCrime();
             updatePhotoView();
         }
 
         else if(requestCode==REQUEST_ZOOMED_PHOTO){
             removePhoto();
+            updateCrime();
             updatePhotoView();
         }
+    }
+
+    private void updateCrime(){
+        CrimeLab.get(getActivity()).updateCrime(mCrime);
+        mCallbacks.onCrimeUpdated(mCrime);
     }
 
 

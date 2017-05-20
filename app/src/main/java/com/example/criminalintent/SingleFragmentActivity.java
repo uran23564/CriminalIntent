@@ -1,6 +1,7 @@
 package com.example.criminalintent;
 
 import android.os.Bundle;
+import android.support.annotation.LayoutRes;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v7.app.AppCompatActivity;
@@ -16,10 +17,16 @@ public abstract class SingleFragmentActivity extends AppCompatActivity {
     protected abstract Fragment createFragment(); // initialisiert fragment; subklassen von SingleFragmentActivity werden diese
     // Methode fuer sich massgeschneidert selbst definieren
 
+    // Unterklassen koennen diese Methode ueberschreiben (je nach Gusto)
+    @LayoutRes // sagt AndroidStudio, dass eine gueltige Layout resource ID zurueckgegeben werden muss
+    protected int getLayoutResId(){
+        return R.layout.activity_fragment;
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_fragment);
+        setContentView(getLayoutResId());
 
         FragmentManager fm=getSupportFragmentManager(); // neuer fragmentmanager -- dieser managed eine liste von fragments und einen back stack von fragment transactions
         // ausserdem fuegt er die views der fragments in die hierarchie der activity ein
