@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">CriminalIntent</string>
+    <string name="crime_title_hint">Geben Sie einen Titel f&#252;r das Verbrechen ein</string>
+    <string name="crime_title_label">Titel</string>
+    <string name="crime_details_label">Details</string>
+    <string name="crime_solved_label">Gel&#246;st</string>
+    <string name="crime_serious_label">Ernsthaftes Verbrechen</string>
+    <string name="date_picker_title">Datum des Verbrechens: </string>
+    <string name="ok">OK</string>
+    <string name="no_crimes">Zur Zeit gibt es keine Verbrechen</string>
+
+    <string name="new_crime">Neues Verbrechen</string>
+    <string name="delete_crime">Verbrechen l&#246;schen</string>
+    <string name="show_subtitle">Untertitel anzeigen</string>
+    <string name="hide_subtitle">Untertitel verstecken</string>
+
+    <plurals name="subtitle_plural">
+        <item quantity="one">%1$d Verbrechen</item>
+        <item quantity="other">%1$d Verbrechen</item>
+    </plurals>
+
+    <!-- <string name="subtitle_format">1$d crimes</string>-->
+    <string name="crime_suspect_text">Verd&#228;chtigen w&#246;hlen</string>
+    <string name="crime_report_text">Verbrechensbericht abschicken</string>
+    <string name="crime_call_suspect">Verd&#246;chtigen anrufen</string>
+
+    <!-- Format String - Vorlage fuer den abzuschickenden CrimeReport -->
+    <string name="crime_report">%1$s! Das Verbrechen wurde am %2$s entdeckt. %3$s, %4$s und %5$s</string>
+    <string name="crime_report_solved">Der Fall ist gel&#246;st</string>
+    <string name="crime_report_unsolved">Der Fall ist nicht gel&#246;st</string>
+    <string name="crime_report_serious">ben&#246;tigt polizeiliche Ermittlung</string>
+    <string name="crime_report_not_serious">ist harmlos</string>
+    <string name="crime_report_no_suspect">es gibt keinen Verd&#228;chtigen.</string>
+    <string name="crime_report_suspect">der Verd&#228;chtige ist %s.</string>
+    <string name="crime_report_subject">CriminalIntent Verbrechensbericht</string>
+    <string name="send_report">Bericht via ... abschicken</string>
+
+
+    <string name="delete_photo">Foto l&#228;schen</string>
+
+</resources>

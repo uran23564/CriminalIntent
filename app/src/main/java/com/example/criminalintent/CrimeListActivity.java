@@ -43,9 +43,9 @@ public class CrimeListActivity extends SingleFragmentActivity implements CrimeLi
         listFragment.updateUI();
     }
 
-    @Override
+    /*@Override
     public void onCrimeSwiped(Crime crime){
         CrimeLab.get(getApplicationContext()).deleteCrime(crime);
-    }
+    }*/
 
 }

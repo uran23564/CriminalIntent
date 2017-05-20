@@ -51,7 +51,7 @@ public class CrimeListFragment extends Fragment {
     // Interface zur Kommunikation mit hostenden Activities
     public interface Callbacks{
         void onCrimeSelected(Crime crime); // implementierte Methode soll CrimeFragment anzeigen
-        void onCrimeSwiped(Crime crime); // implementiert Methode zum Loeschen eines Crimes
+        // void onCrimeSwiped(Crime crime); // implementiert Methode zum Loeschen eines Crimes
     }
 
     @Override
@@ -92,7 +92,8 @@ public class CrimeListFragment extends Fragment {
                         final int pos=viewHolder.getAdapterPosition();
                         Crime crime=mAdapter.getCrimes().get(pos);
                         if(direction==ItemTouchHelper.LEFT){
-                            mCallbacks.onCrimeSwiped(crime);
+                            // mCallbacks.onCrimeSwiped(crime);
+                            CrimeLab.get(getContext()).deleteCrime(crime);
                         }
                         else if(direction==ItemTouchHelper.RIGHT){
                             mCallbacks.onCrimeSelected(crime);
@@ -257,6 +258,7 @@ public class CrimeListFragment extends Fragment {
             mTitleTextView.setText(mCrime.getTitle());
             mDateTextView.setText(mCrime.getLongDate().toString());
             mSolvedImageView.setVisibility(crime.isSolved() ? View.VISIBLE: GONE);
+            mSolvedImageView.setContentDescription(mCrime.isSolved()? getString(R.string.crime_solved_label):getString(R.string.crime_not_solved_label));
         }
 
         @Override
@@ -301,6 +303,7 @@ public class CrimeListFragment extends Fragment {
             mSeriousTextView.setText(String.valueOf(mCrime.isPoliceRequired()));
             mSolvedImageView.setVisibility(crime.isSolved() ? View.VISIBLE: GONE);
             mCallPolice.setVisibility(crime.isSolved() ? GONE:View.VISIBLE); // Verstecke Knopf, wenn der Fall geloest ist
+            mSolvedImageView.setContentDescription(mCrime.isSolved()? getString(R.string.crime_solved_label):getString(R.string.crime_not_solved_label));
         }
 
         @Override
