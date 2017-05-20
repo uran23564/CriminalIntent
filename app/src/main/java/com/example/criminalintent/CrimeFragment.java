@@ -129,6 +129,7 @@ public class CrimeFragment extends Fragment {
         mReportButton=(Button) v.findViewById(R.id.crime_report);
         mSuspectButton=(Button) v.findViewById(R.id.crime_suspect);
         mCallButton=(Button) v.findViewById(R.id.crime_call);
+        // mCallButton.setEnabled(false); // wird erst entsperrt, wenn wir wirklich eine telefonnummer bekommen koennen
 
 
         // Titel setzen
@@ -226,7 +227,7 @@ public class CrimeFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 Intent intent=new Intent(Intent.ACTION_DIAL);
-                intent.putExtra(Intent.EXTRA_PHONE_NUMBER,mCrime.getSuspectPhoneNumber());
+                intent.setData(Uri.parse("tel:" + mCrime.getSuspectPhoneNumber()));
                 startActivity(intent);
             }
         });
@@ -287,11 +288,16 @@ public class CrimeFragment extends Fragment {
 
         else if(requestCode==REQUEST_CONTACT && data!=null){
             Uri contactUri=data.getData(); // zeigt auf den geklickten kontakt
+            String suspectId=null;
+            String suspectName=null;
+            String suspectNumber=null;
             // welche Teile des kontakts wollen wir auslesen?
-            String[] queryFields=new String[]{ ContactsContract.Contacts.DISPLAY_NAME, ContactsContract.CommonDataKinds.Phone.NUMBER};
+            // String[] queryFields=new String[]{ ContactsContract.Contacts.DISPLAY_NAME, ContactsContract.Contacts._ID};
             // fuehre anfrage aus; daten von einem ContactProvider (wie kontakten) bekommen wir mittels eines wrappers, dem ContactResolver
             // Instanzen von ContactProvidern wrappen Datenbanken
-            Cursor c=getActivity().getContentResolver().query(contactUri,queryFields,null,null,null); // zeigt auf die zeile, die wir von data bekommen haben
+            // Cursor c=getActivity().getContentResolver().query(contactUri,queryFields,ContactsContract.Contacts.HAS_PHONE_NUMBER +"!=0",null,null); // zeigt auf die zeile, die wir von data bekommen haben
+            Cursor c=getActivity().getContentResolver().query(contactUri,null,null,null,null); // zeigt auf die zeile, die wir von data bekommen haben
+
             try{
                 // pruefen, ob wir was zurueckbekommen haben
                 if(c.getCount()==0){
@@ -299,14 +305,37 @@ public class CrimeFragment extends Fragment {
                 }
                 // lese die erste spalte aus -- dies ist der name des kontakts
                 c.moveToFirst();
-                String suspect=c.getString(0);
-                mCrime.setSuspect(suspect);
-                // TODO ermittle telefonnummer
-                mSuspectButton.setText(suspect);
+                suspectName = c.getString(c.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME));
+                suspectId=c.getString(c.getColumnIndex(ContactsContract.Contacts._ID));
+                boolean hasPhone=Integer.parseInt(c.getString(c.getColumnIndex(ContactsContract.Contacts.HAS_PHONE_NUMBER)))>0; // checke, ob kontakt eine telefonnummer hat
+                if(hasPhone){
+                    Cursor cp=getActivity().getContentResolver().query(ContactsContract.CommonDataKinds.Phone.CONTENT_URI,
+                                                                        null,
+                                                                        ContactsContract.CommonDataKinds.Phone.CONTACT_ID + " = ? ",
+                                                                        new String[] {suspectId}, null);
+                    try {
+                        if (cp.getCount() == 0) {
+                            return;
+                        }
+                        cp.moveToFirst();
+                        suspectNumber=cp.getString(cp.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER));
+                    }
+                    finally {
+                        cp.close();
+                    }
+                }
+                else{
+                    mCallButton.setEnabled(false);
+                }
+                mCrime.setSuspect(suspectName);
+                mSuspectButton.setText(suspectName);
+                mCrime.setSuspectPhoneNumber(suspectNumber);
             }
             finally{
                 c.close(); // aufraeumen nicht vergessen!
             }
+
+
         }
     }
 
