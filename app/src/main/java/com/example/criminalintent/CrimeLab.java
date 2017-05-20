@@ -9,6 +9,7 @@ import com.example.criminalintent.database.CrimeBaseHelper;
 import com.example.criminalintent.database.CrimeCursorWrapper;
 import com.example.criminalintent.database.CrimeDbSchema.CrimeTable;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -133,6 +134,11 @@ public class CrimeLab { // Singleton-Klasse
         // mCrimes.remove(c); ab jetzt nur noch SQL
         ContentValues values=getContentValues(c);
         mDatabase.delete(CrimeTable.NAME,CrimeTable.Cols.UUID + " = ?", new String[] { c.getId().toString() });
+    }
+
+    public File getPhotoFile(Crime crime){ // wird den vollstaendigen lokalen pfad zum foto zurueckgeben -- werden spaeter in URIs uebersetzt, damit die kamera-app damit umgehen kann
+        File filesDir=mContext.getFilesDir();
+        return new File(filesDir,crime.getPhotoFileName());
     }
 
 }

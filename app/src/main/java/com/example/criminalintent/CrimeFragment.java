@@ -3,13 +3,18 @@ package com.example.criminalintent;
 import android.app.Activity;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.content.pm.ResolveInfo;
 import android.database.Cursor;
+import android.graphics.Bitmap;
+import android.media.Image;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.ContactsContract;
+import android.provider.MediaStore;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.ShareCompat;
+import android.support.v4.content.FileProvider;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.LayoutInflater;
@@ -22,7 +27,10 @@ import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.EditText;
+import android.widget.ImageButton;
+import android.widget.ImageView;
 
+import java.io.File;
 import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -43,9 +51,12 @@ public class CrimeFragment extends Fragment {
     public static final String EXTRA_UUID="crime_id_back"; // zum zuruecksenden
     private static final String DIALOG_DATE="DialogDate"; // tag fuer den alertdialog, damit dieser identifiziert und aufgerufen werden kann
     private static final String DIALOG_TIME="DialogTime"; // tag fuer den alertdialog, damit dieser identifiziert und aufgerufen werden kann
+    private static final String DIALOG_PHOTO="DialogPhoto";
     private static int REQUEST_DATE=0; // zum identifizieren des kind-fragments, von dem wir eine antwort erwarten -- hier DatePickerFragment
     private static int REQUEST_TIME=1; // zum identifizieren des kind-fragments --hier TimePickerFragment
     private static int REQUEST_CONTACT=2; // wir erwarten eine antwort von der kontakt-app
+    private static int REQUEST_PHOTO=3; // wir erwarten ein foto, welches an einem vorgegebenem pfad gespeichert werden soll
+    private static int REQUEST_ZOOMED_PHOTO=4;
 
     private Crime mCrime; // eine Untat aus einer Liste von Untaten (die in CrimeListActivity bzw. CrimeListFragment gemanaged wird), wird in diesem Fragment bearbeitet
     // private UUID[] maybeChangedIds; // moeglicherweise veraenderte Crimes
@@ -59,6 +70,9 @@ public class CrimeFragment extends Fragment {
     private Button mReportButton;
     private Button mSuspectButton;
     private Button mCallButton;
+    private ImageButton mPhotoButton;
+    private ImageView mPhotoView;
+    private File mPhotoFile;
     
     
     public static CrimeFragment newInstance(UUID crimeId){ // methode wird von einer activity aufgerufen, die dieses fragment mit zusaetzlichen bundles erzeugen moechte -- hier soll dem erzeugten Fragment eine crimeId uebergeben werden
@@ -103,6 +117,8 @@ public class CrimeFragment extends Fragment {
         
         // teilt dem FragmentManager mit, dass wir ein Menu haben, d.h. CrimeListFragment muss Menu-Callbacks vom OS empfangen koennen
         setHasOptionsMenu(true);
+
+        mPhotoFile=CrimeLab.get(getActivity()).getPhotoFile(mCrime); // Pfad zum Foto des Crimes
     }
     
     // wird ein Crime geaendert, so soll die SQL-Datenbank aktualisiert werden
@@ -118,7 +134,10 @@ public class CrimeFragment extends Fragment {
         View v=inflater.inflate(R.layout.fragment_crime,container,false);
         // wir werden den view im code der activity schreiben, weshalb dritter parameter false ist
 
-        final Intent pickContact=new Intent(Intent.ACTION_PICK, ContactsContract.Contacts.CONTENT_URI);
+        PackageManager packageManager=getActivity().getPackageManager();
+
+        final Intent pickContact=new Intent(Intent.ACTION_PICK, ContactsContract.Contacts.CONTENT_URI); // intent fuer kontaktabfrage
+        final Intent captureImage=new Intent(MediaStore.ACTION_IMAGE_CAPTURE); // intent fuers ausloesen der kamera
 
         // widgets konfigurieren
         mTitleField=(EditText) v.findViewById(R.id.crime_title); // findViewById muss vom view des fragments aufgerufen werden
@@ -130,6 +149,9 @@ public class CrimeFragment extends Fragment {
         mSuspectButton=(Button) v.findViewById(R.id.crime_suspect);
         mCallButton=(Button) v.findViewById(R.id.crime_call);
         // mCallButton.setEnabled(false); // wird erst entsperrt, wenn wir wirklich eine telefonnummer bekommen koennen
+        mPhotoButton=(ImageButton) v.findViewById(R.id.crime_camera);
+        mPhotoView=(ImageView) v.findViewById(R.id.crime_photo);
+
 
 
         // Titel setzen
@@ -237,12 +259,44 @@ public class CrimeFragment extends Fragment {
         }
 
 
+        // checke, ob es eine app gibt, die bilder aufnehmen kann
+        boolean canTakePhoto=mPhotoFile != null && captureImage.resolveActivity(packageManager)!= null;
+        mPhotoButton.setEnabled(canTakePhoto);
+        //
+        mPhotoButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Uri uri= FileProvider.getUriForFile(getActivity(),"com.example.criminalintent.fileprovider",mPhotoFile); // uebersetzt pfad in uri fuer kamera-app
+                captureImage.putExtra(MediaStore.EXTRA_OUTPUT,uri); // speichere das aufgenommene bild in oben spezifizierten pfad
+                // nun erlauben wir allen apps, die bilder aufnehmen koennen, diese auch bei uns zu speichern
+                List <ResolveInfo> cameraActivities = getActivity().getPackageManager().queryIntentActivities(captureImage,PackageManager.MATCH_DEFAULT_ONLY); // gibt alle apps, die bilder aufnehmen koennen
+                for(ResolveInfo activity : cameraActivities){
+                    getActivity().grantUriPermission(activity.activityInfo.packageName,uri,Intent.FLAG_GRANT_WRITE_URI_PERMISSION); // erlaubt diesen apps zu speichern
+                }
+                startActivityForResult(captureImage,REQUEST_PHOTO);
+            }
+        });
+        updatePhotoView(); // lade foto
+
+
+        // lade reingezoomte version des fotos
+        mPhotoView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                FragmentManager manager=getFragmentManager();
+                ZoomedPhotoFragment dialog=ZoomedPhotoFragment.newInstance(mPhotoFile);
+                dialog.setTargetFragment(CrimeFragment.this,REQUEST_ZOOMED_PHOTO); // TargetFragment ist das Fragment, das Daten von einem anderen Fragment bekommen soll, wenn es zerstoert wird. wir haben somit eine Verbindung zwischen CrimeFragment un DatePickerFragment
+                dialog.show(manager,DIALOG_PHOTO);
+            }
+        });
+
+
         // checke, ob wir eine app haben, die kontakte auslesen kann (wenn es keine gibt, und der user klicken koennte, wuerde die app crashen)
-        PackageManager packageManager=getActivity().getPackageManager();
         if(packageManager.resolveActivity(pickContact,PackageManager.MATCH_DEFAULT_ONLY)==null){ // MATCH_DEFAULT_ONLY restringiert die suche auf activities mit CATEGORY_DEFAULT-flag (d.h., es muss activities geben,
             // die die aufgabe tatsaechlich freiwillig uebernehmen wollen; wenn die suche erfolgreich ist, bekommen wir eine instanz von ResolveInfo, die uns alles ueber die gefundene activity sagt
             mSuspectButton.setEnabled(false);
         }
+
 
         return v;
     }
@@ -337,6 +391,17 @@ public class CrimeFragment extends Fragment {
 
 
         }
+
+        else if(requestCode==REQUEST_PHOTO){
+            Uri uri= FileProvider.getUriForFile(getActivity(),"com.example.criminalintent.fileprovider",mPhotoFile);
+            getActivity().revokeUriPermission(uri,Intent.FLAG_GRANT_WRITE_URI_PERMISSION); // nun duerfen die apps keine fotos mehr speichern
+            updatePhotoView();
+        }
+
+        else if(requestCode==REQUEST_ZOOMED_PHOTO){
+            removePhoto();
+            updatePhotoView();
+        }
     }
 
 
@@ -389,5 +454,21 @@ public class CrimeFragment extends Fragment {
         String report=getString(R.string.crime_report,mCrime.getTitle(),dateString,solvedString,seriousString,suspect);
 
         return report;
+    }
+
+
+    // laedt das skalierte bitmap
+    private void updatePhotoView(){
+        if (mPhotoFile==null || !mPhotoFile.exists()){
+            mPhotoView.setImageDrawable(null);
+        }
+        else{
+            Bitmap bitmap=PictureUtils.getScaledBitmap(mPhotoFile.getPath(),getActivity());
+            mPhotoView.setImageBitmap(bitmap);
+        }
+    }
+
+    private void removePhoto(){
+        mPhotoFile.delete();
     }
 }
