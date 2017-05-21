@@ -98,6 +98,8 @@ public class CrimeLab { // Singleton-Klasse
         values.put(CrimeTable.Cols.SOLVED,crime.isSolved() ? 1 : 0);
         values.put(CrimeTable.Cols.SERIOUS,crime.isPoliceRequired() ? 1 : 0);
         values.put(CrimeTable.Cols.SUSPECT,crime.getSuspect());
+        values.put(CrimeTable.Cols.SUSPECTID,crime.getSuspectId());
+        values.put(CrimeTable.Cols.SUSPECTPHONE,crime.getSuspectPhoneNumber());
         
         return values;
     }

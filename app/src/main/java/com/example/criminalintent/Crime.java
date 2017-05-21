@@ -16,8 +16,9 @@ public class Crime {
     private Date mDate; // Wann ist die Untat geschehen?
     private boolean mSolved; // Wurde das Verbrechen geloest?
     private boolean mRequiresPolice; // ernsthaftes Verbrechen?
-    private String mSuspect; // Verdaechtiger
-    private String mSuspectPhoneNumber; // Telefonnummer des Verdaechtigen -- wird nicht in sql gespeichert
+    private String mSuspect; // Verdaechtiger // noch in SQL speichern
+    private long mSuspectId; // ID (im Telefonbuch) des Verdaechtigen // noch in sql speichern
+    private String mSuspectPhoneNumber; // Telefonnummer des Verdaechtigen -- wird nicht in sql gespeichert // irgendwann wegschmeissen
 
     public Crime(){
         // mId=UUID.randomUUID(); // zufaellige, aber eindeutige identifikationsnummer (universally unique ID)
@@ -62,6 +63,7 @@ public class Crime {
     public boolean isSolved(){ return mSolved;}
     public boolean isPoliceRequired(){ return mRequiresPolice;}
     public String getSuspect(){ return mSuspect;}
+    public long getSuspectId(){return mSuspectId;}
     public String getSuspectPhoneNumber(){ return mSuspectPhoneNumber; }
 
     
@@ -89,8 +91,9 @@ public class Crime {
     public void setSolved(boolean solved){mSolved=solved;}
     public void setPoliceRequired(boolean policeRequired){ mRequiresPolice=policeRequired;}
     public void setSuspect(String suspect){mSuspect=suspect;}
+    public void setSuspectId(long id){mSuspectId=id;}
     public void setSuspectPhoneNumber(String number){mSuspectPhoneNumber=number;}
-
+    
 
     public String getPhotoFileName(){
         return "IMG_" + getId().toString() + ".jpg"; // einzigartiger dateiname fuer das erstellte foto

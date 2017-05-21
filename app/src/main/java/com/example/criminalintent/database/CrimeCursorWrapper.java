@@ -30,7 +30,8 @@ public class CrimeCursorWrapper extends CursorWrapper{
         int isSolved=getInt(getColumnIndex(CrimeTable.Cols.SOLVED));
         int isSerious=getInt(getColumnIndex(CrimeTable.Cols.SERIOUS));
         String suspect=getString(getColumnIndex(CrimeTable.Cols.SUSPECT));
-        // Uri phoneNumber=Uri.parse(getColumnIndex(CrimeTable.Cols.PHONENUMBER));
+        long suspectId=getLong(getColumndIndex(CrimeTable.Cols.SUSPECTID));
+        String suspectPhone=getString(getColumnIndex(CrimeTable.Cols.SUSPECTPHONE));
         
         Crime crime=new Crime(UUID.fromString(uuidString));
         crime.setTitle(title); // importiere java.util.date, NICHT java.sql.date
@@ -38,7 +39,8 @@ public class CrimeCursorWrapper extends CursorWrapper{
         crime.setSolved(isSolved!=0);
         crime.setPoliceRequired(isSerious!=0);
         crime.setSuspect(suspect);
-        // crime.setSuspectPhoneNumber(phoneNumber);
+        crime.setSuspectId(suspectId);
+        crime.setSuspectPhoneNumber(suspectPhone);
         
         return crime;
     }

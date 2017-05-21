@@ -167,7 +167,12 @@ public class CrimeFragment extends Fragment {
         mReportButton=(Button) v.findViewById(R.id.crime_report);
         mSuspectButton=(Button) v.findViewById(R.id.crime_suspect);
         mCallButton=(Button) v.findViewById(R.id.crime_call);
-        // mCallButton.setEnabled(false); // wird erst entsperrt, wenn wir wirklich eine telefonnummer bekommen koennen
+        if(mCrime.getSuspectPhoneNumber!=null){
+            mCallButton.setEnabled(true); 
+        }
+        else{
+            mCallbacks.setEnabled(false);
+        }
         mPhotoButton=(ImageButton) v.findViewById(R.id.crime_camera);
         mPhotoView=(ImageView) v.findViewById(R.id.crime_photo);
 
@@ -364,6 +369,7 @@ public class CrimeFragment extends Fragment {
         else if(requestCode==REQUEST_CONTACT && data!=null){
             Uri contactUri=data.getData(); // zeigt auf den geklickten kontakt
             String suspectId=null;
+            // long suspectId=0;
             String suspectName=null;
             String suspectNumber=null;
             // welche Teile des kontakts wollen wir auslesen?
@@ -382,12 +388,15 @@ public class CrimeFragment extends Fragment {
                 c.moveToFirst();
                 suspectName = c.getString(c.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME));
                 suspectId=c.getString(c.getColumnIndex(ContactsContract.Contacts._ID));
+                // suspectId=c.getLong(c.getColumnIndex(ContactsContract.Contacts._ID));
                 boolean hasPhone=Integer.parseInt(c.getString(c.getColumnIndex(ContactsContract.Contacts.HAS_PHONE_NUMBER)))>0; // checke, ob kontakt eine telefonnummer hat
                 if(hasPhone){
+                    // TODO: nach Erlaubnis fragen, ob auf Kontakte zugegriffen werden darf
                     Cursor cp=getActivity().getContentResolver().query(ContactsContract.CommonDataKinds.Phone.CONTENT_URI, // lies gesamte datenbank ein
                                                                         null,
                                                                         ContactsContract.CommonDataKinds.Phone.CONTACT_ID + " = ? ", // selektiere die telefonnummer entsprechend unserer id
                                                                         new String[] {suspectId}, null);
+                                                                        // new String[] {getString(suspectId)}, null);
                     try {
                         if (cp.getCount() == 0) {
                             return;
@@ -402,10 +411,11 @@ public class CrimeFragment extends Fragment {
                 else{
                     mCallButton.setEnabled(false);
                 }
-                updateCrime();
+                // mCrime.setSuspectId(suspectId); // schauen, obs mit long klappt
                 mCrime.setSuspect(suspectName);
                 mSuspectButton.setText(suspectName);
                 mCrime.setSuspectPhoneNumber(suspectNumber);
+                updateCrime();
             }
             finally{
                 c.close(); // aufraeumen nicht vergessen!

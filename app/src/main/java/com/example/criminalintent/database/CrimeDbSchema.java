@@ -18,7 +18,8 @@ public class CrimeDbSchema {
             public static final String SOLVED="solved";
             public static final String SERIOUS="serious";
             public static final String SUSPECT="suspect";
-            // public static final String PHONENUMBER="phonenumber";
+            public static final String SUSPECTID="suspectid"
+            public static final String SUSPECTPHONE="suspectphone";
         }
     }
 }
