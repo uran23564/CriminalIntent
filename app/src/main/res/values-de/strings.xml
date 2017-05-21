@@ -38,5 +38,10 @@
 
 
     <string name="delete_photo">Foto l&#228;schen</string>
+    <string name="crime_not_serious_label">Bagatelldelikt</string>
+    <string name="crime_not_solved_label">Nicht gel&#246;st</string>
+    <string name="crime_photo_button_description">Foto des Verbrechens schie&#223;en</string>
+    <string name="crime_photo_image_description">Foto des Verbrechens (gesetzt)</string>
+    <string name="crime_photo_no_image_description">Foto des Verbrechens (nicht gesetzt)</string>
 
 </resources>

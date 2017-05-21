@@ -1,5 +1,6 @@
 package com.example.criminalintent;
 
+import android.Manifest;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
@@ -15,6 +16,7 @@ import android.provider.MediaStore;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.ShareCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v4.content.FileProvider;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -48,7 +50,6 @@ import static android.app.Activity.RESULT_OK;
 
 public class CrimeFragment extends Fragment {
     private static final String ARG_CRIME_ID="crime_id";
-    // private static final String ARG_CRIME="crime";
     public static final String EXTRA_UUID="crime_id_back"; // zum zuruecksenden
     private static final String DIALOG_DATE="DialogDate"; // tag fuer den alertdialog, damit dieser identifiziert und aufgerufen werden kann
     private static final String DIALOG_TIME="DialogTime"; // tag fuer den alertdialog, damit dieser identifiziert und aufgerufen werden kann
@@ -58,6 +59,7 @@ public class CrimeFragment extends Fragment {
     private static int REQUEST_CONTACT=2; // wir erwarten eine antwort von der kontakt-app
     private static int REQUEST_PHOTO=3; // wir erwarten ein foto, welches an einem vorgegebenem pfad gespeichert werden soll
     private static int REQUEST_ZOOMED_PHOTO=4;
+    private static final int REQUEST_PERMISSION = 5;
 
     private Crime mCrime; // eine Untat aus einer Liste von Untaten (die in CrimeListActivity bzw. CrimeListFragment gemanaged wird), wird in diesem Fragment bearbeitet
     // private UUID[] maybeChangedIds; // moeglicherweise veraenderte Crimes
@@ -120,6 +122,7 @@ public class CrimeFragment extends Fragment {
         }
     }
 
+    // notwendige initialisierungen bevor layout geladen wird
     @Override
     public void onCreate(Bundle savedInstanceState){
         super.onCreate(savedInstanceState);
@@ -167,11 +170,11 @@ public class CrimeFragment extends Fragment {
         mReportButton=(Button) v.findViewById(R.id.crime_report);
         mSuspectButton=(Button) v.findViewById(R.id.crime_suspect);
         mCallButton=(Button) v.findViewById(R.id.crime_call);
-        if(mCrime.getSuspectPhoneNumber!=null){
+        if(mCrime.getSuspectPhoneNumber()!=null){
             mCallButton.setEnabled(true); 
         }
         else{
-            mCallbacks.setEnabled(false);
+            mCallButton.setEnabled(false);
         }
         mPhotoButton=(ImageButton) v.findViewById(R.id.crime_camera);
         mPhotoView=(ImageView) v.findViewById(R.id.crime_photo);
@@ -266,7 +269,13 @@ public class CrimeFragment extends Fragment {
         mSuspectButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                startActivityForResult(pickContact,REQUEST_CONTACT); // resultat wird ein pointer (genauer gesagt ein contactUri-Objekt) auf den geklickten namen sein. den werden wir in onActivityResult auslesen
+                // startActivityForResult(pickContact,REQUEST_CONTACT); // resultat wird ein pointer (genauer gesagt ein contactUri-Objekt) auf den geklickten namen sein. den werden wir in onActivityResult auslesen
+                int permissionCheck = ContextCompat.checkSelfPermission(getActivity(), Manifest.permission.READ_CONTACTS);
+                if (permissionCheck != PackageManager.PERMISSION_GRANTED) {
+                    CrimeFragment.this.requestPermissions(new String[]{Manifest.permission.READ_CONTACTS}, REQUEST_PERMISSION); // frage user, ob kontakte gelesen werden duerfen
+                } else {
+                    startActivityForResult(pickContact, REQUEST_CONTACT);
+                }
             }
         });
 
@@ -368,8 +377,8 @@ public class CrimeFragment extends Fragment {
 
         else if(requestCode==REQUEST_CONTACT && data!=null){
             Uri contactUri=data.getData(); // zeigt auf den geklickten kontakt
-            String suspectId=null;
-            // long suspectId=0;
+            // String suspectId=null;
+            long suspectId=0;
             String suspectName=null;
             String suspectNumber=null;
             // welche Teile des kontakts wollen wir auslesen?
@@ -387,22 +396,22 @@ public class CrimeFragment extends Fragment {
                 // lese die erste spalte aus -- dies ist der name des kontakts
                 c.moveToFirst();
                 suspectName = c.getString(c.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME));
-                suspectId=c.getString(c.getColumnIndex(ContactsContract.Contacts._ID));
-                // suspectId=c.getLong(c.getColumnIndex(ContactsContract.Contacts._ID));
-                boolean hasPhone=Integer.parseInt(c.getString(c.getColumnIndex(ContactsContract.Contacts.HAS_PHONE_NUMBER)))>0; // checke, ob kontakt eine telefonnummer hat
-                if(hasPhone){
-                    // TODO: nach Erlaubnis fragen, ob auf Kontakte zugegriffen werden darf
+                suspectId=c.getLong(c.getColumnIndex(ContactsContract.Contacts._ID));
+                String[] fields = {ContactsContract.CommonDataKinds.Phone.NUMBER};
+                String selectClause = ContactsContract.CommonDataKinds.Phone.CONTACT_ID + " = ?";
+                String[] selectParams = {Long.toString(suspectId)};
+                if(Integer.parseInt(c.getString(c.getColumnIndex(ContactsContract.Contacts.HAS_PHONE_NUMBER)))>0){
                     Cursor cp=getActivity().getContentResolver().query(ContactsContract.CommonDataKinds.Phone.CONTENT_URI, // lies gesamte datenbank ein
-                                                                        null,
-                                                                        ContactsContract.CommonDataKinds.Phone.CONTACT_ID + " = ? ", // selektiere die telefonnummer entsprechend unserer id
-                                                                        new String[] {suspectId}, null);
-                                                                        // new String[] {getString(suspectId)}, null);
+                            fields,
+                            selectClause, // selektiere die telefonnummer entsprechend unserer id
+                            selectParams, null);
                     try {
                         if (cp.getCount() == 0) {
                             return;
                         }
                         cp.moveToFirst();
                         suspectNumber=cp.getString(cp.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER));
+                        mCallButton.setEnabled(true);
                     }
                     finally {
                         cp.close(); // aufraeumen nicht vergessen!
@@ -411,7 +420,7 @@ public class CrimeFragment extends Fragment {
                 else{
                     mCallButton.setEnabled(false);
                 }
-                // mCrime.setSuspectId(suspectId); // schauen, obs mit long klappt
+                mCrime.setSuspectId(suspectId); // schauen, obs mit long klappt
                 mCrime.setSuspect(suspectName);
                 mSuspectButton.setText(suspectName);
                 mCrime.setSuspectPhoneNumber(suspectNumber);
@@ -420,7 +429,6 @@ public class CrimeFragment extends Fragment {
             finally{
                 c.close(); // aufraeumen nicht vergessen!
             }
-
 
         }
 
@@ -506,6 +514,16 @@ public class CrimeFragment extends Fragment {
             Bitmap bitmap=PictureUtils.getScaledBitmap(mPhotoFile.getPath(),getActivity());
             mPhotoView.setImageBitmap(bitmap);
             mPhotoView.setContentDescription(getString(R.string.crime_photo_image_description));
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) { // wenn der nutzer bei der abfrage zugestimmt hat, starten wir sofort die activity
+        if (requestCode == REQUEST_PERMISSION) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                Intent pickContact = new Intent(Intent.ACTION_PICK, ContactsContract.Contacts.CONTENT_URI);
+                startActivityForResult(pickContact, REQUEST_CONTACT);
+            }
         }
     }
 

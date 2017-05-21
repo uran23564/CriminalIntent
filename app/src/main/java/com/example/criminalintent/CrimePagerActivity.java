@@ -18,7 +18,6 @@ import java.util.UUID;
 public class CrimePagerActivity extends AppCompatActivity implements CrimeFragment.Callbacks{ // implementiert Callbacks als hostende Activity von CrimeFragment, damit die Liste der Crimes aktualisiert werden kann,
     // wenn ein Crime geaendert wurde
     private static final String EXTRA_CRIME_ID="com.example.criminalintent.crime_id";
-    // private static final String EXTRA_CRIME="com.example.criminalintent.crime";
 
     private ViewPager mViewPager;
     private Button mFirstCrime;
@@ -27,7 +26,6 @@ public class CrimePagerActivity extends AppCompatActivity implements CrimeFragme
     private List<Crime> mCrimes;
     
     public static Intent newIntent(Context packageContext, UUID crimeId){
-    // public static Intent newIntent(Context packageContext, Crime crime){
         Intent intent=new Intent(packageContext,CrimePagerActivity.class);
         intent.putExtra(EXTRA_CRIME_ID,crimeId);
         return intent;
@@ -55,8 +53,8 @@ public class CrimePagerActivity extends AppCompatActivity implements CrimeFragme
             @Override
             public Fragment getItem(int position){
                 Crime crime=mCrimes.get(position);
-                mFirstCrime.setEnabled(mViewPager.getCurrentItem()==0 ? false:true); // knopf deaktivieren, wenn wir an erster stelle sind
-                mLastCrime.setEnabled(mViewPager.getCurrentItem()==mCrimes.size()-1 ? false:true); // knopf deaktivieren, wenn wir an letzter stelle sind
+                // mFirstCrime.setEnabled(mViewPager.getCurrentItem()!=0);
+                // mLastCrime.setEnabled(mViewPager.getCurrentItem()!=mCrimes.size()-1);
                 return CrimeFragment.newInstance(crime.getId());
             }
             
@@ -64,7 +62,6 @@ public class CrimePagerActivity extends AppCompatActivity implements CrimeFragme
             public int getCount(){
                 return mCrimes.size();
             }
-
 
         });
         
@@ -74,6 +71,24 @@ public class CrimePagerActivity extends AppCompatActivity implements CrimeFragme
                 break;
             }
         }
+
+        mViewPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
+            @Override
+            public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
+                // passt
+            }
+
+            @Override
+            public void onPageSelected(int position) {
+                mFirstCrime.setEnabled(mViewPager.getCurrentItem()!=0);
+                mLastCrime.setEnabled(mViewPager.getCurrentItem()!=mCrimes.size()-1);
+            }
+
+            @Override
+            public void onPageScrollStateChanged(int state) {
+                // passt
+            }
+        });
 
 
 
@@ -91,6 +106,8 @@ public class CrimePagerActivity extends AppCompatActivity implements CrimeFragme
             }
         });
     }
+
+
 
     @Override
     public void onCrimeUpdated(Crime crime){
